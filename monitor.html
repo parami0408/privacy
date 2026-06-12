@@ -1,0 +1,596 @@
+#!/system/bin/sh
+
+# 1. 自动化操作——毕竟要符合更复杂的可拓展可能——可以读取当时XML支持进一步自动化——方能进行快速自动恢复：但支持少量可到达因此可开发
+# 2. 深度自学习并自修改自学习结果——确保内核充分自适应——如果都配置确实感觉不太好逐步进行参数学习化
+# 3. 更严格的操作控制如调试结束时候检测也包括补充检测确保健壮性——确实放到外面更合适呀因为规则不明朗嘛？
+# 3. 如果怎么也挽救不了核心服务譬如无障碍服务时的紧急保护策略，高密度进行的可能性？通过usage的全面扩展调用命令？
+# 4. 既然安全控制但需要升级和安装软件时的合理操作，但又不能完全放开的自动化合理操作...，全面控制adbenable状态
+# 4. 替身应用完全基于脚本进行配置——内部界面体系不再搞——可能会太麻烦且不太合适——全部存储外部日志等自然全面分析可能确实合适
+# 5. 更复杂原因全面破防自动恢复能力——正常发起一个延时锁定而无时不刻再启解锁——先发通知然后取消通知打开mainactivity自动检测必须处理否则锁屏只能重启——干脆放到此处强大==这个太麻烦干脆先放到核心层再说！
+# 6. 自定义各种自理规则如番茄钟等——很简单扩展应用了
+# 7. 具体应用页面的定时任务控制补充机制——本身可以增量统计但个人认为也可以在这里补充增加只是一种演示——复杂扩展应用了——但越来越感觉这个可能更合理否则有的只是查看跳过一下而已而非真看
+# 8. 更复杂的自动配置能力——灵活复杂机动但也容易出错没有效果难以产品化的地方——快速锁定核心产品稳定边界？
+# 9. 扩展www的各种功能体、智能体和智慧体都在这里，并提前预检查，可以随时根据用户情况，各种处理...==就做一个网页还不是简单明白所有功能聚集呀并采用原始方式进行
+# 10. 图像识别的命令行程序是否也可以在此呢？或者c程序或者java程序，一回事吧？甚至可以Termux进行独立编译打包支持可拓展自适应方式！==有点难，没必要，只是补充，还是简单！
+
+SCRIPTSPATH=$(dirname "$(realpath "$0" 2>/dev/null)")
+MYPKGNAME=$(realpath "$0" 2>/dev/null | grep -oE '[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){2,}')
+FILEPATH=$(dirname "$SCRIPTSPATH")
+BASEPATH=$(dirname "$FILEPATH")
+PREFSPATH="$BASEPATH/shared_prefs"
+
+SYSTEM_PREFFILE="$PREFSPATH/app_prefs.xml"
+GUARD_PREFFILE="$PREFSPATH/backguard_records.xml"
+EVENTS_PREFFILE="$PREFSPATH/system_events.xml"
+
+LOGSPATH="$FILEPATH/logs"
+POLICY_FILE="$FILEPATH/policies.xml"
+
+TODAY_TIP="$FILEPATH/today.tip"
+AUTOREPLY_TIP="$FILEPATH/autoreply.tip"
+AUTODO_TIP="$FILEPATH/autodo.tip"
+MYREPLY_TIP="$FILEPATH/monitorreply.tip"
+MYDO_TIP="$FILEPATH/monitordo.tip"
+WISHTOHOPE_HISTORY="$FILEPATH/wishtohope.history"
+WISHTOHOPE_TODAY_HISTORY="$FILEPATH/wishtohope.today.history"
+WISHTOHOPE_JUSTNOW_HISTORY="$FILEPATH/wishtohope.justnow.history"
+WISHTOHOPE_TAIL_HISTORY="$FILEPATH/wishtohope.tail.history"
+
+CURRENT_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+
+if [ ! -d "$LOGSPATH" ]; then
+    mkdir "$LOGSPATH"
+fi
+
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 start"
+
+# echo "环境变量——除自定义外其他意义不大:$(env)" 
+# whoami = 等同内部用户！ 
+
+# 兼容华为审核旧版，先更新basicrun并自删除，随时补更
+# grep -q '"auto_config_enable"' "$SYSTEM_PREFFILE" 2>/dev/null
+# case $? in 0) autoConfigEnable="true";; 1) autoConfigEnable="false";; *) exit 1;; esac
+# if [ "$MYPKGNAME" = "cn.ilogic.parami" ] && [ "$autoConfigEnable" = "false" ]; then
+#     echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=100&d_id=0&url=basicrun.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/basicrun.tmp::40"
+#     echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 exit for Not_AutoConfigEnable"
+#     exit 1
+# fi
+
+# 自动自己更新自己的机制！
+MONITOR_SHTEMP="$SCRIPTSPATH/monitor.tmp"
+if [ -s "$MONITOR_SHTEMP" ] && sed -i $'s/\r$//' "$MONITOR_SHTEMP" 2>/dev/null && sh -n "$MONITOR_SHTEMP" 2>/dev/null; then
+    mv "$MONITOR_SHTEMP" "$SCRIPTSPATH/monitor.sh"
+    chmod 755 "$SCRIPTSPATH/monitor.sh"
+    echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 exit for self_mv_update"
+    exit 1
+fi
+
+echo "[$CURRENT_TIME] 当前应用: currentpkg=$currentpkg, currentcls=$currentcls"
+echo "[$CURRENT_TIME] 屏幕应用: screenpkg=$screenpkg, screencls=$screencls"
+echo "[$CURRENT_TIME] androidId=$androidId totalstatminutes=$totalstatminutes, selfstatminutes=$selfstatminutes"
+
+# 未走通之路1——不要存储到sdcard，何况其他位置，权限不足容易卡死
+# 未走通之路2——没有能力执行adb的dumpsys等
+# 未走通之路3——tesseract——但为什么termux可以呢？
+# 未走通之路4——curl命令——但为什么termux可以呢？
+# 未走通之路5——不能直接改变共享存储
+# 未走通之路6——am的activity manager似乎可以用，但发送广播broadcast、start等都不行，权限限制较大？当然其他也难！
+# am start -a android.intent.action.VIEW -d file:///sdcard/Download/update.apk -t application/vnd.android.package-archive
+# content open --uri "file:///sdcard/Download/update.apk" --type "application/vnd.android.package-archive"
+# 未来不如改成必要的通知机制或消息机制和来完成吧？后续需要的时候再说。
+# Intent intent = new Intent(Intent.ACTION_VIEW);
+# intent.setDataAndType(Uri.fromFile(new File("/sdcard/Download/update.apk")), "application/vnd.android.package-archive");
+# intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+# startActivity(intent);
+# 未走通之路7——cat /proc/...没有权限，但ps可以且可以获得相关信息！
+# pppid=$(ps -o ppid= -p $(ps -o ppid= -p $$ | tr -d ' \n\r') | tr -d ' \n\r')
+# mypkgname=$( { realpath "$0" 2>/dev/null || echo "$0" || ps -p $$ -o args= 2>/dev/null; } | sed -n 's|.*/data/user/[0-9]*/\([^/]*\)/.*|\1|p; s|.*/data/data/\([^/]*\)/.*|\1|p' )
+
+# if [ "$currentpkg" = "com.yunlian.meditationmode" ]; then
+#     echo "[$CURRENT_TIME] $currentpkg : $currentcls : $changecls"
+#     # 可以细化监控内容到更细小的秒，甚至更细微，上面的changecls还是按分钟赋值的故实际意义不大
+#     ssec=`date "+%s"`
+#     for i in $(seq 0 59); do
+#         ...
+#         esec=`date "+%s"`
+#         if [ `expr $esec - $ssec` -ge 59 ]; then
+#             break
+#         fi
+#         sleep 1
+#         esec=`date "+%s"`
+#         if [ `expr $esec - $ssec` -ge 59 ]; then
+#             break
+#         fi
+#     done
+# fi
+# 未走通之路8——外部其他应用的存储目录同样没有权限
+# echo "idevgoverncloud.files:"
+# ls -alt /sdcard/android/data/cn.ilogic.parami.idevgoverncloud/xtransfiles/scripts/*
+# Permission denied
+# 未走通之路9——外部应用存储目录在应用卸载时会自动清除！！
+# 未走通之路10——尝试非adb调试时可否内部输出调试日志？
+# PID=$(pidof com.example.helloworld) 不行！
+# PID=$(ps -o ppid= -p $(ps -o ppid= -p $$ | tr -d ' \n\r') | tr -d ' \n\r')
+# if [ -n "$PID" ]; then
+#     echo "PID=$PID"
+#     logcat -d --pid=$PID > /sdcard/appguard_logcat.log
+# else
+#     echo "PID无法获取"
+# fi
+
+# 最狠的是发现了应用商店等类型的一律马上保存，怎么安装都没戏，这个也很有意思
+
+# 通过广播等方式发起各种深度操作
+# echo "LOCK_SCREEN"
+# echo "SCREEN_SAVER:1"
+# echo "CLICK:200,400"
+
+# echo "isNetworkAvailable:$isnetworkavailable"
+# 崩溃日志正在调试执行logcat等时候可以拷贝，但如果没有adb打开即usb处在调试时，拷贝不到外部存储，故做特别处理！
+# 但现在崩溃日志还是容易每次都是新文件，必须再次优化！
+# ls -alt $FILEPATH/crash_*.log
+# cp $FILEPATH/crash_*.log "/sdcard/android/data/$MYPKGNAME/files/"
+# ls -alt "/sdcard/android/data/$MYPKGNAME/files/"
+# ls -alt $FILEPATH/today.tip
+# rm -f $FILEPATH/today.tip
+# ls -alt $LOGSPATH/*
+# cat $LOGSPATH/monitor.log.old | grep "ilogic.cn"
+# cp $LOGSPATH/monitor.log.old /sdcard/android/data/$MYPKGNAME/files/monitor.log.old
+# ls -alt $FILEPATH/attachments/
+# rm $SCRIPTSPATH/basicrun.sh
+# rm $SCRIPTSPATH/basicrun.tmp
+# ls -alt $SCRIPTSPATH/basicrun.*
+# head -10 $SCRIPTSPATH/basicrun.sh
+# ls -alt $FILEPATH/ui*.hierarchy
+# cp $FILEPATH/ui.hierarchy /sdcard/android/data/$MYPKGNAME/files/ui.hierarchy
+# cp $FILEPATH/ui_20260608.hierarchy /sdcard/android/data/$MYPKGNAME/files/ui_20260608.hierarchy
+# find "$FILEPATH" -name "ui_*.hierarchy" -size 0 -delete 2>/dev/null
+# rm -f $FILEPATH/ui*.hierarchy
+# cat "$FILEPATH/setpref.history"
+# rm -f "$FILEPATH/setpref.history"
+# rm -f $FILEPATH/wishtohope_202604*.curl
+# ls -alt $FILEPATH/wishtohope*
+# cat "$WISHTOHOPE_TAIL_HISTORY"
+# tail -1 "$WISHTOHOPE_HISTORY"
+# ls -alt $FILEPATH/wishtohope_*
+# ls -alt $FILEPATH/wishtohope.*
+# rm -f $FILEPATH/wishtohope_20260331.curl
+# find "$FILEPATH" -name "wishtohope_*.curl" -size 0 -delete 2>/dev/null
+# rm -Rf $FILEPATH/www/
+# ls -alt $FILEPATH/www_idevgoverncloud*
+# rm -f $FILEPATH/www_idevgoverncloud.zip
+# ls -alt $FILEPATH/idevgoverncloud*
+# cp $PREFSPATH/system_events.xml /sdcard/system_events.xml
+# ls -alt $FILEPATH/*.status
+# ls -alt $FILEPATH/firstspiralfoundationestablishment.status.*
+# sed -i "s/^notimelimits=.*/notimelimits=20/" "$FILEPATH/firstspiralfoundationestablishment.status"
+# rm -f "$FILEPATH/firstspiralfoundationestablishment.status"
+# sed -i "s/^accessibilityfail=.*/accessibilityfail=5/" "$FILEPATH/firstspiralfoundationestablishment.status"
+# cat "$FILEPATH/firstspiralfoundationestablishment.status"
+# cp "$FILEPATH/firstspiralfoundationestablishment.status" "/sdcard/android/data/$MYPKGNAME/files/"
+# ls -alt $FILEPATH/packages.adbenable.*
+# diff "$FILEPATH/packages.adbenable.before" "$FILEPATH/packages.adbenable.current" 2>/dev/null
+# cat "$PREFSPATH/package_stats.xml"
+# cat "$PREFSPATH/activity_stats.xml"
+# cat "$PREFSPATH/backguard_records.xml"
+# cat "$PREFSPATH/admin_changecounts.xml"
+# if [ -f "$FILEPATH/ui.hierarchy" ]; then
+#     target="/sdcard/android/data/$MYPKGNAME/files"
+#     if [ ! -w "$target" ]; then
+#         echo "目标不可写" >&2
+#     else
+#         timeout 5 cp "$FILEPATH/ui.hierarchy" "$target" 2>/dev/null
+#         if [ $? -ne 0 ]; then
+#             echo "复制失败或超时" >&2
+#         fi
+#     fi
+# fi
+# find "$FILEPATH" -maxdepth 1 -name "firstspiralfoundationestablishment.status.*" -type f -mtime +3 -delete
+# ls -alt "$BASEPATH/tesseract/tessdata"
+# tessdatadir="$BASEPATH/tesseract/tessdata"
+# cp "/sdcard/chi_sim.traineddata" "$tessdatadir/"
+# cp "/sdcard/chi_tra.traineddata" "$tessdatadir/"
+# cp "/sdcard/eng.traineddata" "$tessdatadir/"
+# sed -n 's/.*<string name="events">\(.*\)<\/string>.*/\1/p' "$EVENTS_PREFFILE" | sed 's/},{/}\n{/g; s/^\[//; s/\]$//; s/&quot;/"/g'  > /sdcard/myevent.log
+# ls -alt "$LOGSPATH/debugerror.log*"
+# tail -3 "$LOGSPATH/debugerror.log.old"
+
+# 参照上面的日志输出，可以各种手动定义自己的日志监控
+${log_out_set}
+
+if [ "$modifyenable" = "false" ] && [ "$adbenable" = "0" ]; then
+    if [ -f "$FILEPATH/packages.modifydisable.before" ]; then
+        pm list packages -3 | sed 's/^package://' > $FILEPATH/packages.modifydisable.current
+        diff $FILEPATH/packages.modifydisable.before $FILEPATH/packages.modifydisable.current | grep -E '^\+[^+]' | sed 's/^+//' | while read -r pkg; do
+            if ! grep -q "package=\"$pkg\"" "$POLICY_FILE" 2>/dev/null; then
+                echo "保护期间禁止软件：$pkg"
+                echo "ADD_CLOSE_POLICY:$pkg"
+            fi
+        done
+    else
+        pm list packages -3 | sed 's/^package://' > $FILEPATH/packages.modifydisable.before
+    fi
+else
+    #清空上面的pm存储，只保护调试的情况下不能使用新软件除非修改策略
+    rm -f $FILEPATH/packages.modifydisable.*
+    # rm $FILEPATH/packages.*
+    # pm list packages -3
+fi
+
+# wishtohope.curl的增量上传模型，上传前一天的聊天历史记录，往往覆盖了最后的内容
+# tail -2 $FILEPATH/wishtohope.history
+WISHTOHOPE_HISTORY="$FILEPATH/wishtohope.history"
+YESTERDATE=$(date -d "@$(( $(date +%s) - 86400 ))" +%Y%m%d)
+WISHTOHOPECURL="$FILEPATH/wishtohope_$YESTERDATE.curl"
+WISHTOHOPEXRES="$FILEPATH/wishtohope_$YESTERDATE.xres"
+if [ ! -f "$WISHTOHOPECURL" ]; then
+    : > "$WISHTOHOPECURL"
+    # for oldfile in $(ls "$FILEPATH"/wishtohope_*.curl 2>/dev/null | sort); do
+    for oldfile in "$FILEPATH"/wishtohope_*.curl; do
+        echo "$oldfile"
+        [ "$oldfile" = "$WISHTOHOPECURL" ] && continue
+        [ -s "$oldfile" ] && cat "$oldfile" >> "$WISHTOHOPECURL" && > "$oldfile"
+    done
+    while IFS= read -r line; do
+    ts=$(echo "$line" | sed -n 's/.*"timestamp":\([0-9]*\).*/\1/p')
+    if [ -n "$ts" ]; then
+        ts_date=$(date -d "@${ts%???}" +%Y%m%d 2>/dev/null)
+        if [ "$ts_date" = "$YESTERDATE" ]; then
+            echo "$line" >> "$WISHTOHOPECURL"
+        fi
+    fi
+    done < "$WISHTOHOPE_HISTORY"
+
+    sleep $(( (RANDOM % 300) / 10 )).$(( (RANDOM % 300) % 10 ))
+    echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=103&d_id=0&url=wishtohope.html&_fieldvalue_androidid=$androidId&wishhope=<$WISHTOHOPECURL::$WISHTOHOPEXRES::50" 
+else
+    if [ -f "$WISHTOHOPEXRES" ] && [ "$(head -1 "$WISHTOHOPEXRES" 2>/dev/null)" = "OK" ]; then
+        find "$FILEPATH" -name "wishtohope_*.curl" -size 0 -delete 2>/dev/null
+        : > "$WISHTOHOPECURL"
+        # 基于parami中心进行专服匹配
+        # 关于当前唯一主服虽是目标但非过程——各种售前各种售后等==针对昨日无响应内容时，每天用户进入界面时还是要进行一下补充处理，否则感觉毫无动静！
+        # 依然没有则进行系统级五种超级处理！
+        MAINCSS=$(grep "CurrentSpecialService=" "$WISHTOHOPEXRES" | cut -d= -f2)
+        if [ -z "$MAINCSS" ]; then
+            echo "SET_GUARD_PREF:current_specialservice=$MAINCSS"
+        fi
+        ISSSTRING=$(grep "ImportSpecialServices=" "$WISHTOHOPEXRES" | cut -d= -f2)
+        USSSTRING=$(grep "UpdateSpecialServices=" "$WISHTOHOPEXRES" | cut -d= -f2)
+        BSSSTRING=$(grep "BeyondSpecialServices=" "$WISHTOHOPEXRES" | cut -d= -f2)
+        rm -f "$WISHTOHOPEXRES"
+    fi
+fi
+
+# 一般匹配一个主愿望！
+# ISS，处理需要新导入的专服，形如firstspiralfoundationestablishment:111;kaikai:123;...
+echo "${ISSSTRING:-}" | tr ';' '\n' | while read entry; do
+    [ -z "$entry" ] && continue
+    SpecSrvrName=$(echo "$entry" | cut -d':' -f1)
+    SpecSrvrTid=$(echo "$entry" | cut -d':' -f2)
+    if [ -n "$SpecSrvrName" ] && [ -n "$SpecSrvrTid" ]; then
+        if [ ! -f "$SCRIPTSPATH/$SpecSrvrName.sh" ]; then
+            echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=$SpecSrvrTid&d_id=0&url=$SpecSrvrName.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/$SpecSrvrName.sh::10"
+            sleep 10
+            if [ -f "$SCRIPTSPATH/$SpecSrvrName.sh" ]; then
+                sed -i $'s/\r$//' "$SCRIPTSPATH/$SpecSrvrName.sh" 2>/dev/null
+                chmod 755 "$SCRIPTSPATH/$SpecSrvrName.sh"
+                echo -e "导入最新，专慧$SpecSrvrName，智慧响应，甚含系统\n补充说明：是否包含专业系统，可以长按右上圆点，弹出框中若含此体，点击选择即为统子" >> "$MYREPLY_TIP"
+                echo -e "导入最新，专慧$SpecSrvrName，智慧响应，甚含系统\n补充说明：是否包含专业系统，可以长按右上圆点，弹出框中若含此体，点击选择即为统子" >> "$MYDO_TIP"
+            fi
+        fi
+    fi
+done
+
+# USS，处理待更新的专服
+echo "${USSSTRING:-}" | tr ';' '\n' | while read entry; do
+    [ -z "$entry" ] && continue
+    SpecSrvrName=$(echo "$entry" | cut -d':' -f1)
+    SpecSrvrTid=$(echo "$entry" | cut -d':' -f2)
+    if [ -n "$SpecSrvrName" ] && [ -n "$SpecSrvrTid" ]; then
+        if [ -f "$SCRIPTSPATH/$SpecSrvrName.sh" ]; then
+            echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=$SpecSrvrTid&d_id=0&url=$SpecSrvrName.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/$SpecSrvrName.tmp::10"
+        fi
+    fi
+done
+# 遍历所有 .sh 文件，检查是否存在同名的 .tmp 文件进行升级
+for sh_file in "$SCRIPTSPATH"/*.sh; do
+    SpecSrvrName=$(basename "$sh_file" .sh)
+    tmp_file="$SCRIPTSPATH/$SpecSrvrName.tmp"
+    if [ -f "$tmp_file" ] && [ -s "$tmp_file" ] && [ "$tmp_file" -nt "$sh_file" ]; then
+        if sed -i $'s/\r$//' "$tmp_file" 2>/dev/null && sh -n "$tmp_file" 2>/dev/null; then
+            mv "$tmp_file" "$sh_file"
+            chmod 755 "$sh_file"
+        fi
+    fi
+done
+
+# 提取包名最后一段（必须是四级以上，否则退出）
+# 参数太多硬编码太多，放弃：http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=106&d_id=0&url=$iagentname.html&_fieldvalue_androidid=$androidId
+# echo "CURL:http://parami.ilogic.cn/idevgoverncloud/idevgoverncloud.sh::$SCRIPTSPATH/idevgoverncloud.tmp::30"
+iagentname=$(echo "$MYPKGNAME" | sed -n 's/^[^.]*\.[^.]*\.[^.]*\.\([^.]*\)$/\1/p')
+if [ -n "$iagentname" ]; then
+    if [ ! -f "$SCRIPTSPATH/$iagentname.sh" ]; then
+        if ! grep "parami.ilogic.cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+            echo "CURL:http://parami.ilogic.cn/$iagentname/$iagentname.html::$SCRIPTSPATH/$iagentname.tmp::30"
+        else
+            # 私有彼岸专服中心也可直接提供服务，服务中心最新代码可以发布私有中心，完全平等同时支持可以私化形成替代
+            # 可以建立云端独立服务机制只收最基本的服务器费，即最小虚拟容器docker，这确实需要摊销成本消耗费用的！
+            echo "CURL:http://$iagentname.ilogic.cn/$iagentname.html::$SCRIPTSPATH/$iagentname.tmp::30"
+        fi
+    fi
+    if [ -f "$SCRIPTSPATH/$iagentname.tmp" ] && sed -i $'s/\r$//' "$SCRIPTSPATH/$iagentname.tmp" 2>/dev/null && sh -n "$SCRIPTSPATH/$iagentname.tmp" 2>/dev/null; then
+        mv "$SCRIPTSPATH/$iagentname.tmp" "$SCRIPTSPATH/$iagentname.sh"
+        chmod 755 "$SCRIPTSPATH/$iagentname.sh"
+    fi
+    www_runalways=$(sed -n 's/.*<string name="www_runalways">\([^<]*\)<\/string>.*/\1/p' "$GUARD_PREFFILE")
+    if [ $? -ne 0 ]; then exit 1; fi
+    if [ -f "$FILEPATH/www_$iagentname/index.html" ] && [ -z "$www_runalways" ]; then
+        echo "SET_GUARD_PREF:www_runalways=$iagentname"
+    fi
+fi
+
+# 针对adbprotect的特殊获取，必须严格控制？
+# adbprotect单独为独立高级专慧体的版本，不再直接获取而是必须安装专门自律app即adbprotect.parami.ilogic.cn传送，这个比较高妙！
+# 未必不行，对于特殊已经加入推荐的也是可以的啊，待实际场景进一步完善
+# find "$SCRIPTSPATH/adbprotect.sh" -maxdepth 1 -not -newermt "2026-04-26 10:30:00" -delete 2>/dev/null
+# if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ] && [ "$adbenable" = "1" ]; then
+#     echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=101&d_id=0&url=adbprotect.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/adbprotect.sh::10" 
+#     sleep 15
+#     if [ -f "$SCRIPTSPATH/adbprotect.sh" ]; then
+#         sed -i $'s/\r$//' "$SCRIPTSPATH/adbprotect.sh" 2>/dev/null
+#         chmod 755 "$SCRIPTSPATH/adbprotect.sh"
+#     elif [ ! -z "$recentGuardbackPackage" ]; then
+#         echo "XTRANSFILE:$recentGuardbackPackage=scripts/adbprotect.sh"
+#     fi
+# fi
+if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ]; then
+    if [ "$MYPKGNAME" = "cn.ilogic.parami.adbprotect" ]; then
+        echo "GETFROMASSETS:scripts/adbprotect.sh"
+        sleep 2
+    else
+        if pm list packages -3 2>/dev/null | grep -q "cn.ilogic.parami.adbprotect"; then
+            echo "XTRANSFILE:cn.ilogic.parami.adbprotect=scripts/adbprotect.sh"
+            sleep 5
+            # 自动清除由于adbprotect不存在带来的todayTip向导，实际我觉得未必有这个需要，暂时有头有未吧
+            rm -f "$TODAY_TIP"
+        fi
+    fi
+fi
+
+# 转义 MYPKGNAME 中的点号（用于正则）
+escaped_pkg=$(echo "$MYPKGNAME" | sed 's/\./\\./g')
+# 提取所有匹配 $MYPKGNAME.* 的包名
+chdPackages=$(grep -o "package=\"$escaped_pkg\\.[^\"]*\"" "$POLICY_FILE" | sed 's/package="//;s/"//')
+for chdPackage in $chdPackages; do
+    lastPackname=$(echo "$chdPackage" | sed 's/.*\.//')
+    if [ ! -f "$SCRIPTSPATH/$lastPackname.sh" ]; then
+        echo "XTRANSFILE:$chdPackage=scripts/$lastPackname.sh"
+        echo "XTRANSFILE:$chdPackage=www_$lastPackname.zip"
+        sleep 10
+    fi
+done
+
+# find "$TODAY_TIP" -maxdepth 1 -not -newermt "$(date -I) 00:00:00" -delete
+if [ -f "$TODAY_TIP" ] && find "$TODAY_TIP" -maxdepth 1 -not -newermt "$(date -I) 00:00:00" 2>/dev/null | grep -q .; then
+    sleep $(( (RANDOM % 300) / 10 )).$(( (RANDOM % 300) % 10 ))
+    rm -f "$FILEPATH"/*.tip
+fi
+
+#  && [ ! -f "$TODAY_TIP" ]
+if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ]; then
+    todayTip="__高保护愿体验引导__\n1. 加入应用，尝试小愿，戒禁限制，体验“诚真”\n2. “诚真”执行——立即更新monitor慧体，本专慧体，自我刷新\n3. 更多“发心”，链接专慧，乃至愿成，亟需保愿\n4. 系统强健，乃至不漏，同需高保，特专慧体\n5. 全面体验，关联专慧，自动更新，智能引导"
+    echo -e "$todayTip" > "$TODAY_TIP"    
+fi
+
+# 基于parami.ilogic.cn进行整体补充五行响应，非常抽象层面但同样为专慧体，实际上就是既有体系无法解决问题从而逐步向根回归的过程！这个根上面寻找MSS/ISS/USS等区别在哪呢？这是直接兜底，即一切无效的前提下直接进行的无上机制。实际上，上面的机制可以产生新的支持专慧体，但如果一切都没有呢？无才是一切的根本，而最快无的方式就是反向，反向归根才为逆真。==就是服务器上返回的BSSSTRING呗，支持多行BeyondSpecialServices=，也支持一行内\n分隔的内部多行，第一行视为$TODAY_TIP，剩余给$MYREPLY_TIP；实际上各种专业解答就在此处，慧体专家直接服务！
+if [ -n "$BSSSTRING" ]; then
+    # 提取第一行（真实换行为分隔）
+    first_line=$(printf "%s\n" "$BSSSTRING" | head -n1)
+    # 提取剩余行（从第二行开始）
+    rest=$(printf "%s\n" "$BSSSTRING" | tail -n +2)
+    # 写入 TODAY_TIP，使用 echo -e 解释其中的 \n
+    if [ -n "$first_line" ]; then
+        echo -e "$first_line" > "$TODAY_TIP"
+    fi
+
+    # 写入 MYREPLY_TIP
+    if [ -n "$rest" ]; then
+        echo -e "$rest" >> "$MYREPLY_TIP"
+    fi
+fi
+
+# 如果健康控制为空，就是无法匹配进入，提供典型方法，这也是一种自动化的补充方式！
+wellbeingPkg=`sed -n 's/.*<string name="wellbeing_pkg">\([^<]*\)<\/string>.*/\1/p' "$SYSTEM_PREFFILE"`;
+if [ $? -ne 0 ]; then exit 1; fi
+echo "wellbeingPkg=$wellbeingPkg"
+
+# ImportSpecialService=专慧英文名称，譬如firstspiralfoundationestablishment、idevgoverncloud、kaikai等，此时将基于不存在这个sh文件才往下执行，否则这些命令将被递交具体专慧体内部进行解析！
+if grep -q "fulfillWish" "$WISHTOHOPE_TAIL_HISTORY" && \
+    grep -q '"text":"ImportSpecialService=' "$WISHTOHOPE_TAIL_HISTORY"; then
+    SpecialService=$(sed -n 's/.*"text":"ImportSpecialService=\([a-z]*\)".*/\1/p' "$WISHTOHOPE_TAIL_HISTORY")
+
+    # adbprotect的特殊性，参上！
+    if [ "$SpecialService" eq "adbprotect" ]; then
+        echo -e "高保护愿，特专慧体，暂难导入，下载安装\n说明：具体进一步发心诚真寻找更高方案。" >> "$MYDO_TIP"
+    elif [ -n "$SpecialService" ] && [ ! -f "$SCRIPTSPATH/$SpecialService.sh" ]; then
+        if [ ! -f "$SCRIPTSPATH/$SpecialService.sh" ]; then
+            if ! grep "$SpecialService.ilogic.cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+                echo "CURL:http://$SpecialService.ilogic.cn/$SpecialService.sh::$SCRIPTSPATH/$SpecialService.tmp::30"
+            else
+                echo "CURL:http://parami.ilogic.cn/$SpecialService/$SpecialService.html::$SCRIPTSPATH/$SpecialService.tmp::30"
+            fi
+        fi
+        if [ -f "$SCRIPTSPATH/$SpecialService.tmp" ] && sed -i $'s/\r$//' "$SCRIPTSPATH/$SpecialService.tmp" 2>/dev/null && sh -n "$SCRIPTSPATH/$SpecialService.tmp" 2>/dev/null; then
+            mv "$SCRIPTSPATH/$SpecialService.tmp" "$SCRIPTSPATH/$SpecialService.sh"
+            chmod 755 "$SCRIPTSPATH/$SpecialService.sh"
+            echo -e "嵌引最新，专慧$SpecialService，智慧响应，甚含系统\n补充说明：是否包含专业系统，可以长按右上圆点，弹出框中若含此体，点击选择即为统子" >> "$MYDO_TIP"
+        fi
+    fi
+
+fi
+
+# 一些逐步递增的嵌入操作语义转换模型！
+wishtohope_tail_text=$(cat "$WISHTOHOPE_TAIL_HISTORY" | grep -E '"action":"fulfillWish"' | grep -E '"type":"user"' | sed -n 's/.*"text":"\([^"]*\)".*/\1/p')
+if [ -n "$wishtohope_tail_text" ]; then
+    if echo "$wishtohope_tail_text" | grep -qE "不看|拒绝|阻止|禁止|屏蔽|过滤|限制|戒" && echo "$wishtohope_tail_text" | grep -qE "敏感|不雅|糟糕|不良|不宜|不适|成人|违规|反感|厌恶"; then
+        awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnText>false</closeOnText>")print "ENHANCEPOLICY:"pkg"=closeOnText";f=0}' "$POLICY_FILE"
+        echo -e "全面增强，敏感内容，自动过滤，防止涉入" > "$MYDO_TIP"
+        echo "moniter004 exit for auto-closeontext-set"
+        exit 1
+    fi
+
+    if echo "$wishtohope_tail_text" | grep -qE "戒|不看|拒|阻止|禁止|屏蔽|限制" && echo "$wishtohope_tail_text" | grep -qE "视频|播放|直播|抖音|短剧"; then
+        awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnPlay>false</closeOnPlay>")print "ENHANCEPOLICY:"pkg"=closeOnPlay";f=0}' "$POLICY_FILE"
+        echo -e "全面增强，视频播放，戒断禁止，聚焦正事" > "$MYDO_TIP"    
+        echo "moniter004 exit for auto-closeonply-set"
+        exit 1
+    fi
+
+    if echo "$wishtohope_tail_text" | grep -qE "每日|每天|每个|单个" && echo "$wishtohope_tail_text" | grep -qE "总时|限时|控制.*时间|限制.*时间"; then
+        echo -e "统一设置，每天限制，手机总时，应用超时\n如果要进行这种统一设置，请严格按照以下格式进行：本人YYY，诚挚请愿，每日总时，限于T1时，单个应用，不超T2时，否则全锁，唯待来日。\n备注：当前已使用总时间为$totalstatminutes分" > "$MYDO_TIP"    
+        echo "moniter004 exit for auto-timelimit-set"
+        exit 1
+    fi
+
+    if [ "$wishtohope_tail_text" = "立即更新monitor慧体" ]; then
+        if ! grep "parami.ilogic.cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+            echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=102&d_id=0&url=monitor.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/monitor.tmp::10" 
+        else
+            # 收取各种紧急信息从而打开该网络支持是为关键！
+            echo "CURL:http://monitor.ilogic.cn/monitor.html::$SCRIPTSPATH/monitor.tmp::30" 
+        fi
+        echo -e "自动实施，立即更新，尤自定义，日志显示：montor专慧体是愿望工程的入口" > "$MYDO_TIP" 
+        echo "moniter004 exit for self-auto-update"
+        exit 1
+    fi
+    
+fi
+
+
+# 或者链接每个层次的辅理人员，当前专慧的信者、从者、外门、弟子等，这是每种客户服务的基础能力！但也要充分说明此辅理也是无时不刻可以得到慧体专家的支持指导！中转通道默认应该是parami.ilogic.cn，但如果服务通道停止了，那该怎么办？尤其什么专服都没有时呢？服务器停止时？毕竟彻底无响应啊？==就从辅理入手，辅理可以从各种TA曾经被授权的通道联合服务渠道转交！
+# 基于昨天一天的记录得知众多内容没有响应(所以一天一次)从而自动给出提示，根据没有回复的内容条目，推进纵深级别，没有回复的内容同时包含字数的影响，重复是可以的！
+# 从哪里来的从哪儿找到或询问道，可以链接上的辅理(他们当然有专门渠道链接专慧)
+# 跟辅理强化链接，从而体现足够的真诚，获取专慧体的能量更加畅通的响应，打通链接通道强化专慧效果
+# 直接从网络渠道如应用商城、普通商城乃至...寻找parami下的独立专慧体等下载服务链接从而直接安装对应的专慧体应用
+# 最后加急直接调用邮件联系parami——这是自动化功能之一，直接得到更多更明确的指导
+# 获取安装适合自己的专慧体，可以简单唯一的嵌入式导入，可以链式安装形成应用链式长监管，人工辅理是至关重要的——人和链接是超越一切价值的根本
+# 特别注意：如同布施，未必物质，更在诚意，以心换心，自然而然，随然而然，缘分一到，必然而然
+# 直接可视化输入密码来操作健康手机等，这个最强不可思议！
+# ------------------------------------------------------------------------------------------
+# 基于$WISHTOHOPE_TODAY_HISTORY这个文件，记录格式...
+# 发现昨天的记录最后面连续都是"type":"user"
+# 统计一共连续多少条，一共多少文字即text对应内容（"text":"统计用时"）,并根据"action":"sendWish"/"action":"fulfillWish"统计各占多少文字
+# 如果超过3条，累计超过50文字，且fulfillWish至少存在条目，则：
+# echo "何处得知，此之应用，开始链接，其之辅理" >> "$MYREPLY_TIP"
+# echo -e "基于辅理，可找专慧，集于发心，往向诚真\n特别注意：如同布施，未必物质，更在诚意，以心换心，自然而然，随然而然，缘分一到，必然而然" >> "$MYDO_TIP"
+# 如果超过5条，累计超过100文字，且fulfillWish部分至少存在30文字，则：
+# echo "愿望集中，描述足够，文字真诚，辅理畅通" >> "$MYREPLY_TIP"
+# echo -e "面向辅理，强化链接，暗能充分，专慧随然\n特别注意：如同布施，未必物质，更在诚意，以心换心，自然而然，随然而然，缘分一到，必然而然" >> "$MYDO_TIP"
+# 如果超过8条，累计超过200文字，且fulfillWish部分至少存在50文字，则：
+# echo -e "应用市场，流行商城，淘宝咸鱼，均可存在\n直指专慧，包含辅理，获取慧体，安装使用，多种方式快速寻找适合自己的专慧体。" >> "$MYREPLY_TIP"
+# echo -e "基于彼岸，专慧方向，嵌入导入，链式安装\n特别注意：如同布施，未必物质，更在诚意，以心换心，自然而然，随然而然，缘分一到，必然而然" >> "$MYDO_TIP"
+# 如果超过10条，累计超过250文字，且fulfillWish部分至少存在100文字，则：
+# echo "自动邮件，parami0408，自动链接，最高中心" >> "$MYREPLY_TIP"
+# echo "自动邮件，parami0408，自动链接，最高中心" >> "$MYDO_TIP"
+
+if find "$WISHTOHOPE_TODAY_HISTORY" -maxdepth 1 -not -newermt "$(date -I) 00:00:00" 2>/dev/null | grep -q . || [ ! -f "$SCRIPTSPATH/adbprotect.sh" ] || ([ "$selfstatminutes" -gt 5 ] && [ ! -s "$MYREPLY_TIP" ] && [ ! -s "$MYDO_TIP" ] && [ ! -s "$AUTOREPLY_TIP" ]  && [ ! -s "$AUTODO_TIP" ]  && ! grep -q '"text":"每日首检：' "$WISHTOHOPE_TODAY_HISTORY" 2>/dev/null); then
+
+    # 直接通过 awk 输出并赋值给变量，使用 set 解析，避免 here-string
+    eval "$(awk '
+    {
+        lines[++n] = $0
+    }
+    END {
+        count = 0; total_len = 0; send_len = 0; fulfill_len = 0; has_fulfill = 0
+        for (i = n; i >= 1; i--) {
+            line = lines[i]
+            if (index(line, "\"type\":\"user\"") == 0) break
+            count++
+            # 查找 "text":" 的位置
+            start = index(line, "\"text\":\"") + 8
+            if (start > 8) {
+                end = index(substr(line, start), "\"") - 1
+                text = substr(line, start, end)
+                # 统计汉字和英文字母个数（纯 awk，无外部命令）
+                chn = 0; eng = 0
+                for (k = 1; k <= length(text); k++) {
+                    c = substr(text, k, 1)
+                    if (c ~ /[a-zA-Z]/) eng++
+                    else if (c ~ /[一-龥]/) chn++
+                }
+                # 等效长度：汉字个数（好像要除3） + 英文字母个数 / 2.5，四舍五入
+                len = int(chn / 3 + eng / 2.5 + 0.5)
+                total_len += len
+                if (index(line, "\"action\":\"sendWish\"") > 0) send_len += len
+                if (index(line, "\"action\":\"fulfillWish\"") > 0) { fulfill_len += len; has_fulfill = 1 }
+            }
+        }
+        printf "wh_count=%d; total_len=%d; send_len=%d; fulfill_len=%d; has_fulfill=%d", count, total_len, send_len, fulfill_len, has_fulfill
+    }' "$WISHTOHOPE_TODAY_HISTORY")"
+
+    # 调试输出：统计结果: 1 39 39 0 0，这是一个汉字3个宽度UTF字节数，另外1 个汉字 ≈ 2.5 个英文字母，重新计算！
+    echo "统计结果: $wh_count $total_len $send_len $fulfill_len $has_fulfill"
+
+    if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ]; then
+        rm -f "$TODAY_TIP" 
+    fi
+    if [ -z "$todayTip" ] && [ $wh_count -ge 3 ]; then
+        todayTip="愿望辅理"
+    fi
+
+    # 根据条件输出
+    # 从最严格的条件开始判断（10条）
+    if [ $wh_count -ge 10 ] && [ $total_len -gt 250 ] && [ $fulfill_len -ge 100 ]; then
+        if [ -f "$SCRIPTSPATH/adbprotect.sh" ]; then
+            echo "每日首检：自动邮件，parami0408，自动链接，最高中心" > "$MYREPLY_TIP"
+            echo -e "每日首检：自动邮件，parami0408，自动链接，最高中心\n此将自动触发邮件发送自动操作且包含上述关键文字内容..." > "$MYDO_TIP"
+            todayTip="${todayTip}\n自动邮件，parami0408，自动链接，最高中心"
+        else
+            todayTip="${todayTip}\n<font color=red>注意：自动邮件，parami0408，自动链接，最高中心————发送parami0408@163.com尤其是具有会员身份的更能得知具体引入途径——措施基于高保护愿专慧体的请愿样例</font>"
+        fi
+    elif [ $wh_count -ge 8 ] && [ $total_len -gt 200 ] && [ $fulfill_len -ge 50 ]; then
+        if [ -f "$SCRIPTSPATH/adbprotect.sh" ]; then
+            echo -e "每日首检：应用市场，流行商城，淘宝咸鱼，均可存在\n直指专慧，安装使用，获取慧体，链接绝学，多种方式快速寻找适合自己的专慧体和服务体系。" > "$MYREPLY_TIP"
+            echo -e "每日首检：基于彼岸，专慧方向，链式安装，绝学体系\n特别注意：如同布施，未必物质，更在诚意，以心换心，自然而然，随然而然，缘分一到，必然而然，直接安装后将构建链式愿望工程体系..." > "$MYDO_TIP"
+            todayTip="${todayTip}\n应用市场，流行商城，淘宝咸鱼，均可存在\n基于彼岸，专慧方向，链式安装，绝学体系"
+        else
+            todayTip="${todayTip}\n<font color=red>注意：流行商城，淘宝咸鱼，链式安装，绝学体系————尤其在非应用市场的其他场合通过彼岸自律、高级自律、手机自控等查找安装应用补充体————基于高保护愿专慧体的请愿样例</font>"
+        fi
+    elif [ $wh_count -ge 5 ] && [ $total_len -gt 100 ] && [ $fulfill_len -ge 30 ]; then
+        if [ -f "$SCRIPTSPATH/adbprotect.sh" ]; then
+            echo "每日首检：愿望集中，描述足够，文字真诚，辅理畅通" > "$MYREPLY_TIP"
+            echo -e "每日首检：面向辅理，强化链接，暗能充分，引嵌专慧\n特别注意：如同布施，未必物质，更在诚意，以心换心，自然而然，随然而然，缘分一到，必然而然，获取有效适用专慧名称如SSNAME后可以直接诚真执行嵌引专慧命令：ImportSpecialService=专慧英文名称" > "$MYDO_TIP"
+            todayTip="${todayTip}\n愿望集中，描述足够，文字真诚，辅理畅通\n面向辅理，强化链接，暗能充分，引嵌专慧\nImportSpecialService=专慧英文名称"
+        else
+            todayTip="${todayTip}\n<font color=red>注意：一般辅理，畅通链接，多行直言，引嵌专慧——ImportSpecialService=专慧英文名称如adbprotect————基于高保护愿专慧体的请愿样例</font>"
+        fi
+    elif [ $wh_count -ge 3 ] && [ $total_len -gt 50 ] && [ $has_fulfill -eq 1 ]; then
+        if [ -f "$SCRIPTSPATH/adbprotect.sh" ]; then
+            echo "每日首检：何处得知，此之应用，开始链接，其之辅理" > "$MYREPLY_TIP"
+            echo -e "每日首检：基于辅理，可找专慧，集于发心，往向诚真\n特别注意：如同布施，未必物质，更在诚意，以心换心，自然而然，随然而然，缘分一到，必然而然" > "$MYDO_TIP"
+            todayTip="${todayTip}\n何处得知，此之应用，开始链接，其之辅理\n基于辅理，可找专慧，集于发心，往向诚真"
+        else
+            todayTip="${todayTip}\n<font color=red>注意：何处得知，可有辅理，直近专慧，发心诚真——一般直接跟高级自律、高级防护、高级稳定、专业服务等相关————基于高保护愿专慧体的请愿样例</font>"
+        fi
+    elif [ $wh_count -ge 3 ]; then
+        if [ -f "$SCRIPTSPATH/adbprotect.sh" ]; then
+            echo "每日首检：纯粹发心，乃至诚真，心诚不足，无法具象" > "$MYREPLY_TIP"
+            echo "每日首检：稳定之后，多行描述，聚能具象，自然化真" > "$MYDO_TIP"
+            todayTip="${todayTip}\n纯粹发心，乃至诚真，心诚不足，无法具象\n稳定之后，多行描述，聚能具象，自然化真"
+        else 
+            todayTip="${todayTip}\n<font color=red>注意：纯粹“发心”，乃至“诚真”，描述不足，无法具象——多点文字描述譬如高级保护、高级护愿、链接愿望、智能推荐等——基于高保护愿专慧体的请愿样例</font>"
+        fi
+    else
+        if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ]; then
+            todayTip="${todayTip}\n<font color=red>注意：发心诚真，表愿不足，继续发送，方能回应——基于高保护愿专慧体的请愿样例</font>"
+        fi
+    fi
+
+    if [ ! -f "$TODAY_TIP" ] && [ -n "$todayTip" ]; then
+        echo -e "$todayTip" > "$TODAY_TIP"
+    fi
+
+fi
+
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 end"
+exit 0
