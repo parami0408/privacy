@@ -348,11 +348,11 @@ if [ -n "$wishtohope_tail_text" ]; then
                 
             elif [ "$SpecialService" = "adbprotect" ]; then
                 adbprotect_ilogic_cn=`sed -n 's/.*<string name="adbprotect_ilogic_cn">\([^<]*\)<\/string>.*/\1/p' "$GUARD_PREFFILE"`;
-                # if [ -n "$adbprotect_ilogic_cn" ] && ! grep "$adbprotect_ilogic_cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+                if [ -n "$adbprotect_ilogic_cn" ] && ! grep "$adbprotect_ilogic_cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
                     echo "CURL:http://$adbprotect_ilogic_cn/adbprotect.html::$SCRIPTSPATH/adbprotect.tmp::20" 
-                # else                
-                    # echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=101&d_id=0&url=adbprotect.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/adbprotect.tmp::10" 
-                # fi
+                else                
+                    echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=101&d_id=0&url=adbprotect.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/adbprotect.tmp::10" 
+                fi
                 echo -e "自动实施，立即更新，尤自定义，日志显示：adbprotect专慧体是关键高保护愿体" > "$MYDO_TIP" 
                 echo "moniter005 exit for adbprotec-update"
                 exit 1
