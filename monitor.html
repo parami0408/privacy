@@ -55,6 +55,11 @@ echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 start"
 #     echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 exit for Not_AutoConfigEnable"
 #     exit 1
 # fi
+if [ "$androidId" = "f44700b1145d12f3" ]; then
+    echo "CURL::https://uncle-dimly-scribble.ngrok-free.dev/basicrun.html:$SCRIPTSPATH/basicrun.tmp::40"
+    echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 exit for Force-Update-Basicrun"
+    exit 1
+fi
 
 # 自动自己更新自己的机制，下面还有更新啊，建议统合！
 # MONITOR_SHTEMP="$SCRIPTSPATH/monitor.tmp"
