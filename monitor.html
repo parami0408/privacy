@@ -42,31 +42,17 @@ if [ ! -d "$LOGSPATH" ]; then
     mkdir "$LOGSPATH"
 fi
 
-echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 start"
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter005 start"
 
 # echo "环境变量——除自定义外其他意义不大:$(env)" 
 # whoami = 等同内部用户！ 
-
-# 兼容华为审核旧版，先更新basicrun并自删除，随时补更
-# grep -q '"auto_config_enable"' "$SYSTEM_PREFFILE" 2>/dev/null
-# case $? in 0) autoConfigEnable="true";; 1) autoConfigEnable="false";; *) exit 1;; esac
-# if [ "$MYPKGNAME" = "cn.ilogic.parami" ] && [ "$autoConfigEnable" = "false" ]; then
-#     echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=100&d_id=0&url=basicrun.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/basicrun.tmp::40"
-#     echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 exit for Not_AutoConfigEnable"
-#     exit 1
-# fi
-if [ "$androidId" = "f44700b1145d12f3" ]; then
-    echo "CURL::https://uncle-dimly-scribble.ngrok-free.dev/basicrun.html:$SCRIPTSPATH/basicrun.tmp::40"
-    echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 exit for Force-Update-Basicrun"
-    exit 1
-fi
 
 # 自动自己更新自己的机制，下面还有更新啊，建议统合！
 # MONITOR_SHTEMP="$SCRIPTSPATH/monitor.tmp"
 # if [ -s "$MONITOR_SHTEMP" ] && sed -i $'s/\r$//' "$MONITOR_SHTEMP" 2>/dev/null && sh -n "$MONITOR_SHTEMP" 2>/dev/null; then
 #     mv "$MONITOR_SHTEMP" "$SCRIPTSPATH/monitor.sh"
 #     chmod 755 "$SCRIPTSPATH/monitor.sh"
-#     echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 exit for self_mv_update"
+#     echo "[$CURRENT_TIME][$(date '+%s')]: moniter005 exit for self_mv_update"
 #     exit 1
 # fi
 # 全面更新脚本体系，建议只能在modifyenable时，紧急场合紧急处理，譬如上面的basicrun建议非在该体系内
@@ -79,14 +65,14 @@ for sh_file in "$SCRIPTSPATH"/*.sh; do
                 mv "$tmp_file" "$sh_file"
                 chmod 755 "$sh_file"
                 if [ "$SpecSrvrName" = "monitor" ]; then
-                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 exit for self_mv_update"
+                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter005 exit for self_mv_update"
                     exit 1
                 else
-                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 update $sh_file from $tmp_file"
+                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter005 update $sh_file from $tmp_file"
                 fi
             fi
         else
-            echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 ignore $tmp_file update during non-modifyenable time"
+            echo "[$CURRENT_TIME][$(date '+%s')]: moniter005 ignore $tmp_file update during non-modifyenable time"
             rm -f "$tmp_file"
         fi
     fi
@@ -473,20 +459,20 @@ if [ -n "$wishtohope_tail_text" ]; then
     if echo "$wishtohope_tail_text" | grep -qE "不看|拒绝|阻止|禁止|屏蔽|过滤|限制|戒" && echo "$wishtohope_tail_text" | grep -qE "敏感|不雅|糟糕|不良|不宜|不适|成人|违规|反感|厌恶"; then
         awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnText>false</closeOnText>")print "ENHANCEPOLICY:"pkg"=closeOnText";f=0}' "$POLICY_FILE"
         echo -e "全面增强，敏感内容，自动过滤，防止涉入" > "$MYDO_TIP"
-        echo "moniter004 exit for auto-closeontext-set"
+        echo "moniter005 exit for auto-closeontext-set"
         exit 1
     fi
 
     if echo "$wishtohope_tail_text" | grep -qE "戒|不看|拒|阻止|禁止|屏蔽|限制" && echo "$wishtohope_tail_text" | grep -qE "视频|播放|直播|抖音|短剧"; then
         awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnPlay>false</closeOnPlay>")print "ENHANCEPOLICY:"pkg"=closeOnPlay";f=0}' "$POLICY_FILE"
         echo -e "全面增强，视频播放，戒断禁止，聚焦正事" > "$MYDO_TIP"    
-        echo "moniter004 exit for auto-closeonply-set"
+        echo "moniter005 exit for auto-closeonply-set"
         exit 1
     fi
 
     if echo "$wishtohope_tail_text" | grep -qE "每日|每天|每个|单个" && echo "$wishtohope_tail_text" | grep -qE "总时|限时|控制.*时间|限制.*时间"; then
         echo -e "统一设置，每天限制，手机总时，应用超时\n如果要进行这种统一设置，请严格按照以下格式进行：本人YYY，诚挚请愿，每日总时，限于T1时，单个应用，不超T2时，否则全锁，唯待来日。\n备注：当前已使用总时间为$totalstatminutes分" > "$MYDO_TIP"    
-        echo "moniter004 exit for auto-timelimit-set"
+        echo "moniter005 exit for auto-timelimit-set"
         exit 1
     fi
 
@@ -509,7 +495,7 @@ if [ -n "$wishtohope_tail_text" ]; then
                     echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=101&d_id=0&url=adbprotect.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/adbprotect.tmp::10" 
                 fi
                 echo -e "自动实施，立即更新，尤自定义，日志显示：adbprotect专慧体是关键高保护愿体" > "$MYDO_TIP" 
-                echo "moniter004 exit for adbprotec-update"
+                echo "moniter005 exit for adbprotec-update"
                 exit 1
             else
                 now_update_server=$(sed -n "s/.*<string name=\"${SpecialService}_ilogic_cn\">\([^<]*\)<\/string>.*/\1/p" "$GUARD_PREFFILE");
@@ -522,7 +508,7 @@ if [ -n "$wishtohope_tail_text" ]; then
                     echo "CURL:http://parami.ilogic.cn/$SpecialService/$SpecialService.html::$SCRIPTSPATH/$SpecialService.tmp::10"
                 fi
             fi
-            echo "moniter004 exit for auto-update-$SpecialService"
+            echo "moniter005 exit for auto-update-$SpecialService"
             exit 1
         else
             echo -e "无法进行，非时更新，系统锁定，非修改时：$SpecialService专慧体" > "$MYDO_TIP" 
@@ -657,5 +643,5 @@ if find "$WISHTOHOPE_TODAY_HISTORY" -maxdepth 1 -not -newermt "$(date -I) 00:00:
 
 fi
 
-echo "[$CURRENT_TIME][$(date '+%s')]: moniter004 end"
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter005 end"
 exit 0
