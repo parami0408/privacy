@@ -1,18 +1,5 @@
 #!/system/bin/sh
 
-# 1. 自动化操作——毕竟要符合更复杂的可拓展可能——可以读取当时XML支持进一步自动化——方能进行快速自动恢复：但支持少量可到达因此可开发
-# 2. 深度自学习并自修改自学习结果——确保内核充分自适应——如果都配置确实感觉不太好逐步进行参数学习化
-# 3. 更严格的操作控制如调试结束时候检测也包括补充检测确保健壮性——确实放到外面更合适呀因为规则不明朗嘛？
-# 3. 如果怎么也挽救不了核心服务譬如无障碍服务时的紧急保护策略，高密度进行的可能性？通过usage的全面扩展调用命令？
-# 4. 既然安全控制但需要升级和安装软件时的合理操作，但又不能完全放开的自动化合理操作...，全面控制adbenable状态
-# 4. 替身应用完全基于脚本进行配置——内部界面体系不再搞——可能会太麻烦且不太合适——全部存储外部日志等自然全面分析可能确实合适
-# 5. 更复杂原因全面破防自动恢复能力——正常发起一个延时锁定而无时不刻再启解锁——先发通知然后取消通知打开mainactivity自动检测必须处理否则锁屏只能重启——干脆放到此处强大==这个太麻烦干脆先放到核心层再说！
-# 6. 自定义各种自理规则如番茄钟等——很简单扩展应用了
-# 7. 具体应用页面的定时任务控制补充机制——本身可以增量统计但个人认为也可以在这里补充增加只是一种演示——复杂扩展应用了——但越来越感觉这个可能更合理否则有的只是查看跳过一下而已而非真看
-# 8. 更复杂的自动配置能力——灵活复杂机动但也容易出错没有效果难以产品化的地方——快速锁定核心产品稳定边界？
-# 9. 扩展www的各种功能体、智能体和智慧体都在这里，并提前预检查，可以随时根据用户情况，各种处理...==就做一个网页还不是简单明白所有功能聚集呀并采用原始方式进行
-# 10. 图像识别的命令行程序是否也可以在此呢？或者c程序或者java程序，一回事吧？甚至可以Termux进行独立编译打包支持可拓展自适应方式！==有点难，没必要，只是补充，还是简单！
-
 SCRIPTSPATH=$(dirname "$(realpath "$0" 2>/dev/null)")
 MYPKGNAME=$(realpath "$0" 2>/dev/null | grep -oE '[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){2,}')
 FILEPATH=$(dirname "$SCRIPTSPATH")
@@ -43,9 +30,6 @@ if [ ! -d "$LOGSPATH" ]; then
 fi
 
 echo "[$CURRENT_TIME][$(date '+%s')]: moniter005 start"
-
-# echo "环境变量——除自定义外其他意义不大:$(env)" 
-# whoami = 等同内部用户！ 
 
 # 自动自己更新自己的机制，下面还有更新啊，建议统合！
 # MONITOR_SHTEMP="$SCRIPTSPATH/monitor.tmp"
@@ -81,131 +65,6 @@ done
 echo "[$CURRENT_TIME] 当前应用: currentpkg=$currentpkg, currentcls=$currentcls"
 echo "[$CURRENT_TIME] 屏幕应用: screenpkg=$screenpkg, screencls=$screencls"
 echo "[$CURRENT_TIME] androidId=$androidId totalstatminutes=$totalstatminutes, selfstatminutes=$selfstatminutes"
-
-# 未走通之路1——不要存储到sdcard，何况其他位置，权限不足容易卡死
-# 未走通之路2——没有能力执行adb的dumpsys等
-# 未走通之路3——tesseract——但为什么termux可以呢？
-# 未走通之路4——curl命令——但为什么termux可以呢？
-# 未走通之路5——不能直接改变共享存储
-# 未走通之路6——am的activity manager似乎可以用，但发送广播broadcast、start等都不行，权限限制较大？当然其他也难！
-# am start -a android.intent.action.VIEW -d file:///sdcard/Download/update.apk -t application/vnd.android.package-archive
-# content open --uri "file:///sdcard/Download/update.apk" --type "application/vnd.android.package-archive"
-# 未来不如改成必要的通知机制或消息机制和来完成吧？后续需要的时候再说。
-# Intent intent = new Intent(Intent.ACTION_VIEW);
-# intent.setDataAndType(Uri.fromFile(new File("/sdcard/Download/update.apk")), "application/vnd.android.package-archive");
-# intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-# startActivity(intent);
-# 未走通之路7——cat /proc/...没有权限，但ps可以且可以获得相关信息！
-# pppid=$(ps -o ppid= -p $(ps -o ppid= -p $$ | tr -d ' \n\r') | tr -d ' \n\r')
-# mypkgname=$( { realpath "$0" 2>/dev/null || echo "$0" || ps -p $$ -o args= 2>/dev/null; } | sed -n 's|.*/data/user/[0-9]*/\([^/]*\)/.*|\1|p; s|.*/data/data/\([^/]*\)/.*|\1|p' )
-
-# if [ "$currentpkg" = "com.yunlian.meditationmode" ]; then
-#     echo "[$CURRENT_TIME] $currentpkg : $currentcls : $changecls"
-#     # 可以细化监控内容到更细小的秒，甚至更细微，上面的changecls还是按分钟赋值的故实际意义不大
-#     ssec=`date "+%s"`
-#     for i in $(seq 0 59); do
-#         ...
-#         esec=`date "+%s"`
-#         if [ `expr $esec - $ssec` -ge 59 ]; then
-#             break
-#         fi
-#         sleep 1
-#         esec=`date "+%s"`
-#         if [ `expr $esec - $ssec` -ge 59 ]; then
-#             break
-#         fi
-#     done
-# fi
-# 未走通之路8——外部其他应用的存储目录同样没有权限
-# echo "idevgoverncloud.files:"
-# ls -alt /sdcard/android/data/cn.ilogic.parami.idevgoverncloud/xtransfiles/scripts/*
-# Permission denied
-# 未走通之路9——外部应用存储目录在应用卸载时会自动清除！！
-# 未走通之路10——尝试非adb调试时可否内部输出调试日志？
-# PID=$(pidof com.example.helloworld) 不行！
-# PID=$(ps -o ppid= -p $(ps -o ppid= -p $$ | tr -d ' \n\r') | tr -d ' \n\r')
-# if [ -n "$PID" ]; then
-#     echo "PID=$PID"
-#     logcat -d --pid=$PID > /sdcard/appguard_logcat.log
-# else
-#     echo "PID无法获取"
-# fi
-
-# 最狠的是发现了应用商店等类型的一律马上保存，怎么安装都没戏，这个也很有意思
-
-# 通过广播等方式发起各种深度操作
-# echo "SCREEN_SAVER:1"
-# echo "CLICK:200,400"
-
-# echo "isNetworkAvailable:$isnetworkavailable"
-# 崩溃日志正在调试执行logcat等时候可以拷贝，但如果没有adb打开即usb处在调试时，拷贝不到外部存储，故做特别处理！
-# 但现在崩溃日志还是容易每次都是新文件，必须再次优化！
-# ls -alt $FILEPATH/crash_*.log
-# cp $FILEPATH/crash_*.log "/sdcard/android/data/$MYPKGNAME/files/"
-# ls -alt "/sdcard/android/data/$MYPKGNAME/files/"
-# ls -alt $FILEPATH/today.tip
-# rm -f $FILEPATH/today.tip
-# ls -alt $LOGSPATH/*
-# cat $LOGSPATH/monitor.log.old | grep "ilogic.cn"
-# cp $LOGSPATH/monitor.log.old /sdcard/android/data/$MYPKGNAME/files/monitor.log.old
-# ls -alt $FILEPATH/attachments/
-# rm $SCRIPTSPATH/basicrun.sh
-# rm $SCRIPTSPATH/basicrun.tmp
-# ls -alt $SCRIPTSPATH/basicrun.*
-# head -10 $SCRIPTSPATH/basicrun.sh
-# ls -alt $FILEPATH/ui*.hierarchy
-# cp $FILEPATH/ui.hierarchy /sdcard/android/data/$MYPKGNAME/files/ui.hierarchy
-# cp $FILEPATH/ui_20260608.hierarchy /sdcard/android/data/$MYPKGNAME/files/ui_20260608.hierarchy
-# find "$FILEPATH" -name "ui_*.hierarchy" -size 0 -delete 2>/dev/null
-# rm -f $FILEPATH/ui*.hierarchy
-# cat "$FILEPATH/setpref.history"
-# rm -f "$FILEPATH/setpref.history"
-# rm -f $FILEPATH/wishtohope_202604*.curl
-# ls -alt $FILEPATH/wishtohope*
-# cat "$WISHTOHOPE_TAIL_HISTORY"
-# tail -1 "$WISHTOHOPE_HISTORY"
-# ls -alt $FILEPATH/wishtohope_*
-# ls -alt $FILEPATH/wishtohope.*
-# rm -f $FILEPATH/wishtohope_20260331.curl
-# find "$FILEPATH" -name "wishtohope_*.curl" -size 0 -delete 2>/dev/null
-# rm -Rf $FILEPATH/www/
-# ls -alt $FILEPATH/www_idevgoverncloud*
-# rm -f $FILEPATH/www_idevgoverncloud.zip
-# ls -alt $FILEPATH/idevgoverncloud*
-# cp $PREFSPATH/system_events.xml /sdcard/system_events.xml
-# ls -alt $FILEPATH/*.status
-# ls -alt $FILEPATH/firstspiralfoundationestablishment.status.*
-# sed -i "s/^notimelimits=.*/notimelimits=20/" "$FILEPATH/firstspiralfoundationestablishment.status"
-# rm -f "$FILEPATH/firstspiralfoundationestablishment.status"
-# sed -i "s/^accessibilityfail=.*/accessibilityfail=5/" "$FILEPATH/firstspiralfoundationestablishment.status"
-# cat "$FILEPATH/firstspiralfoundationestablishment.status"
-# cp "$FILEPATH/firstspiralfoundationestablishment.status" "/sdcard/android/data/$MYPKGNAME/files/"
-# ls -alt $FILEPATH/packages.adbenable.*
-# diff "$FILEPATH/packages.adbenable.before" "$FILEPATH/packages.adbenable.current" 2>/dev/null
-# cat "$PREFSPATH/package_stats.xml"
-cat "$PREFSPATH/activity_stats.xml"
-# cat "$PREFSPATH/backguard_records.xml"
-# cat "$PREFSPATH/admin_changecounts.xml"
-# if [ -f "$FILEPATH/ui.hierarchy" ]; then
-#     target="/sdcard/android/data/$MYPKGNAME/files"
-#     if [ ! -w "$target" ]; then
-#         echo "目标不可写" >&2
-#     else
-#         timeout 5 cp "$FILEPATH/ui.hierarchy" "$target" 2>/dev/null
-#         if [ $? -ne 0 ]; then
-#             echo "复制失败或超时" >&2
-#         fi
-#     fi
-# fi
-# find "$FILEPATH" -maxdepth 1 -name "firstspiralfoundationestablishment.status.*" -type f -mtime +3 -delete
-# ls -alt "$BASEPATH/tesseract/tessdata"
-# tessdatadir="$BASEPATH/tesseract/tessdata"
-# cp "/sdcard/chi_sim.traineddata" "$tessdatadir/"
-# cp "/sdcard/chi_tra.traineddata" "$tessdatadir/"
-# cp "/sdcard/eng.traineddata" "$tessdatadir/"
-# sed -n 's/.*<string name="events">\(.*\)<\/string>.*/\1/p' "$EVENTS_PREFFILE" | sed 's/},{/}\n{/g; s/^\[//; s/\]$//; s/&quot;/"/g'  > /sdcard/myevent.log
-# ls -alt "$LOGSPATH/debugerror.log*"
-# tail -3 "$LOGSPATH/debugerror.log.old"
 
 # 参照上面的日志输出，可以各种手动定义自己的日志监控
 ${log_out_set}
@@ -489,11 +348,11 @@ if [ -n "$wishtohope_tail_text" ]; then
                 
             elif [ "$SpecialService" = "adbprotect" ]; then
                 adbprotect_ilogic_cn=`sed -n 's/.*<string name="adbprotect_ilogic_cn">\([^<]*\)<\/string>.*/\1/p' "$GUARD_PREFFILE"`;
-                if [ -n "$adbprotect_ilogic_cn" ] && ! grep "$adbprotect_ilogic_cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+                # if [ -n "$adbprotect_ilogic_cn" ] && ! grep "$adbprotect_ilogic_cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
                     echo "CURL:http://$adbprotect_ilogic_cn/adbprotect.html::$SCRIPTSPATH/adbprotect.tmp::20" 
-                else                
-                    echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=101&d_id=0&url=adbprotect.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/adbprotect.tmp::10" 
-                fi
+                # else                
+                    # echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=101&d_id=0&url=adbprotect.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/adbprotect.tmp::10" 
+                # fi
                 echo -e "自动实施，立即更新，尤自定义，日志显示：adbprotect专慧体是关键高保护愿体" > "$MYDO_TIP" 
                 echo "moniter005 exit for adbprotec-update"
                 exit 1
