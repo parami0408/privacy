@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AppGuard 心灯</title>
+    <script src="js/marked.min.js"></script>
+    <style>
+        /* 样式与之前完全相同，略... */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .tip-section {
+            background: rgba(255, 255, 255, 0.95);
+            margin: 16px 16px 12px 16px;
+            border-radius: 6px;
+            padding: 20px 20px 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(4px);
+        }
+        .tip-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #5a3e8c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tip-title::before {
+            content: "✨";
+            font-size: 20px;
+        }
+        .tip-content {
+            font-size: 18px;
+            line-height: 1.5;
+            color: #2d3748;
+            font-weight: 500;
+            word-break: break-word;
+        }
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 16px 8px;
+            scroll-behavior: smooth;
+        }
+        .message-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message-item.user {
+            display: flex;
+            justify-content: flex-end;
+            animation: fadeInUp 0.2s ease-out;
+        }
+        .message-item.user .message-bubble {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 5px;
+            padding: 12px 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-size: 15px;
+            line-height: 1.4;
+            color: #2c3e66;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .message-item.user .message-text {
+            flex: 1;
+            word-break: break-word;
+        }
+        .message-item.user .message-icon {
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+        .message-item.system {
+            display: flex;
+            justify-content: flex-start;
+            animation: fadeInUp 0.2s ease-out;
+        }
+        .message-item.system .message-bubble {
+            background: rgba(100, 100, 120, 0.85);
+            border-radius: 5px;
+            padding: 12px 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            font-size: 15px;
+            line-height: 1.4;
+            color: #f0f0f0;
+        }
+        /* 历史消息样式（淡灰色背景，降低饱和度） */
+        .message-item.system.historical .message-bubble {
+            background: rgba(180, 180, 190, 0.75);
+            border-color: #9ca3af;
+            opacity: 0.9;
+        }
+        /* 系统消息边框变体 */
+        .message-item.system.faxin .message-bubble {
+            border: 1px solid #5b21b6;
+        }
+        .message-item.system.chengzhen .message-bubble {
+            border: 1px solid #c2410c;
+        }
+        .message-attachment {
+            font-size: 12px;
+            color: #8b5cf6;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border-top: 1px solid #e9e9ef;
+            padding-top: 6px;
+        }
+        .empty-chat {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            padding: 40px 20px;
+            font-size: 14px;
+        }
+        .input-bar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 6px;
+            margin: 8px 16px 20px 16px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .attach-btn {
+            background: none;
+            border: none;
+            font-size: 26px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8b5cf6;
+            transition: background 0.2s;
+        }
+        .attach-btn:active {
+            background: rgba(0,0,0,0.05);
+        }
+        .message-input {
+            flex: 1;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 6px;
+            padding: 12px 18px;
+            font-size: 16px;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+            min-height: 96px;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+        .buttons-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .send-btn {
+            background: #8b5cf6;  /* 纯色紫色 */
+            border: 1px solid #5b21b6;
+            color: white;
+            font-weight: 600;
+            padding: 0 16px;
+            border-radius: 6px;
+            height: 40px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+        .fulfill-btn {
+            background: #f59e0b;  /* 纯色橙色 */
+            border: 1px solid #c2410c;
+            color: white;
+            font-weight: 600;
+            padding: 0 16px;
+            border-radius: 6px;
+            height: 40px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+        .send-btn:active, .fulfill-btn:active {
+            transform: scale(0.96);
+            opacity: 0.9;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .chat-area::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-area::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+        /* 回复者小行 */
+        .msg-reply-from {
+            font-size: 10px;
+            color: #999;  /* 浅灰色，比黑色柔和 */
+            margin-top: 2px;  /* 减小上边距 */
+            line-height: 1.2;  /* 紧凑行高 */
+            text-align: right;
+        }
+        .message-item.system .msg-reply-from {
+            text-align: left;
+        }
+        .message-item.system .message-bubble {
+            padding-bottom: 6px;  /* 原 12px 的一半 */
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="tip-section">
+        <div class="tip-title">今日提示</div>
+        <div class="tip-content" id="dailyTip">加载中...</div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+        <div class="empty-chat" id="emptyHint">✨ 写下你的愿望，照亮前路 ✨</div>
+        <div class="message-list" id="messageList"></div>
+    </div>
+
+    <div class="input-bar">
+        <button class="attach-btn" id="attachBtn">📎</button>
+        <textarea class="message-input" id="messageInput" placeholder="写下你的心愿..." rows="2"></textarea>
+        <div class="buttons-vertical">
+            <button class="send-btn" id="sendBtn">发心</button>
+            <button class="fulfill-btn" id="fulfillBtn">诚真</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let lastHistoryStr = null;
+
+    // 配置 marked 支持换行符转 <br>
+    marked.setOptions({ breaks: true });
+
+    // 获取 DOM 元素
+    const messageListEl = document.getElementById('messageList');
+    const emptyHintEl = document.getElementById('emptyHint');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const fulfillBtn = document.getElementById('fulfillBtn');
+    const attachBtn = document.getElementById('attachBtn');
+
+    let currentAttachment = null; // { name, type, data (base64) }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function getFileName(path) {
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+
+    // function renderMessages(messages) {
+    //     messageListEl.innerHTML = '';
+    //     if (!messages || messages.length === 0) {
+    //         emptyHintEl.style.display = 'block';
+    //         return;
+    //     }
+    //     emptyHintEl.style.display = 'none';
+    //     for (const msg of messages) {
+    //         const text = msg.text;
+    //         const attachmentPath = msg.attachment;
+    //         const type = msg.type;
+    //         const messageItem = document.createElement('div');
+    //         messageItem.className = `message-item ${type}`;
+    //         const bubble = document.createElement('div');
+    //         bubble.className = 'message-bubble';
+    //         bubble.innerHTML = `<div>${marked.parse(text)}</div>`;
+    //         if (attachmentPath) {
+    //             const attachDiv = document.createElement('div');
+    //             attachDiv.className = 'message-attachment';
+    //             attachDiv.innerHTML = `📎 ${escapeHtml(getFileName(attachmentPath))}`;
+    //             bubble.appendChild(attachDiv);
+    //         }
+    //         messageItem.appendChild(bubble);
+    //         messageListEl.appendChild(messageItem);
+    //     }
+    //     setTimeout(() => {
+    //         document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+    //     }, 50);
+    // }
+    function renderMessages(messages) {
+        messageListEl.innerHTML = '';
+        if (!messages || messages.length === 0) {
+            emptyHintEl.style.display = 'block';
+            return;
+        }
+        emptyHintEl.style.display = 'none';
+        for (const msg of messages) {
+            const text = msg.text;
+            const attachmentPath = msg.attachment;
+            const type = msg.type;
+            const action = msg.action;  // 'faxin' 或 'chengzhen'
+            
+            const messageItem = document.createElement('div');
+            
+            // 根据 type 和 action 添加类名
+            if (type === 'user') {
+                messageItem.className = 'message-item user';
+            } else {
+                // 系统消息：添加 action 类用于边框颜色
+                const actionClass = action === 'fulfillWish' ? 'chengzhen' : 'faxin';
+                messageItem.className = `message-item system ${actionClass}`;
+            }
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            
+            if (type === 'user') {
+                // 用户消息：文本 + 右侧图标
+                const textSpan = document.createElement('div');
+                textSpan.className = 'message-text';
+                textSpan.innerHTML = marked.parse(text);
+                
+                const iconSpan = document.createElement('div');
+                iconSpan.className = 'message-icon';
+                iconSpan.textContent = msg.action === 'fulfillWish' ? '🔧' : '✨';
+
+                bubble.appendChild(textSpan);
+                bubble.appendChild(iconSpan);
+            } else {
+                // 系统消息：只有文本
+                // bubble.innerHTML = `<div>${marked.parse(text)}</div>`;
+                // 系统消息：处理可能的历史标记
+                let displayText = text;
+                let historicalSuffix = '';
+                const historicalMarker = '[历史参考 - 生成于';
+                if (text.includes(historicalMarker)) {
+                    // 找到最后一个换行符位置，分割正文和标记行
+                    const lastNewline = text.lastIndexOf('\n');
+                    if (lastNewline !== -1) {
+                        displayText = text.substring(0, lastNewline);
+                        historicalSuffix = text.substring(lastNewline + 1).trim();
+                    } else {
+                        // 如果没有换行，尝试直接匹配（但通常有换行）
+                        const markerIndex = text.indexOf(historicalMarker);
+                        if (markerIndex !== -1) {
+                            displayText = text.substring(0, markerIndex).trim();
+                            historicalSuffix = text.substring(markerIndex).trim();
+                        }
+                    }
+                    // 给消息项添加历史类
+                    messageItem.classList.add('historical');
+                }
+                bubble.innerHTML = `<div>${marked.parse(displayText)}</div>`;
+                
+                // 添加回复者小行，如果存在历史后缀则附加
+                const replyFrom = document.createElement('div');
+                replyFrom.className = 'msg-reply-from';
+                // type 首字母大写作为显示名称
+                const displayName = type.charAt(0).toUpperCase() + type.slice(1);
+                let replyText = `—— 来自：${displayName}`;
+                if (historicalSuffix) {
+                    replyText += ` ${historicalSuffix}`;
+                }
+                replyFrom.textContent = replyText;
+                bubble.appendChild(replyFrom);                                
+            }
+            
+            // 附件处理（不变）
+            if (attachmentPath) {
+                const attachDiv = document.createElement('div');
+                attachDiv.className = 'message-attachment';
+                attachDiv.innerHTML = `📎 ${escapeHtml(getFileName(attachmentPath))}`;
+                bubble.appendChild(attachDiv);
+            }
+            
+            messageItem.appendChild(bubble);
+            messageListEl.appendChild(messageItem);
+        }
+        setTimeout(() => {
+            document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+        }, 50);
+    }
+
+    function refreshHistory() {
+        if (window.DataGuardBridge && typeof window.DataGuardBridge.getWishHistory === 'function') {
+            try {
+                const historyStr = window.DataGuardBridge.getWishHistory();
+                if (historyStr !== lastHistoryStr) {
+                    lastHistoryStr = historyStr;
+                    const history = JSON.parse(historyStr);
+                    renderMessages(history);
+                }
+            } catch (e) {
+                console.error("刷新历史失败:", e);
+            }
+        }
+    }
+
+    function sendWish() {
+        let text = messageInput.value.trim();
+        // 修改：无文字但有附件时，自动补“文件”
+        if (!text && currentAttachment) {
+            text = "📎 文件";
+        }
+        if (!text && !currentAttachment) return;
+        if (!text) text = "✨ 发心 ✨";
+
+        let payload = { action: "sendWish", message: text };
+        if (currentAttachment) {
+            payload.attachment = {
+                name: currentAttachment.name,
+                type: currentAttachment.type,
+                data: currentAttachment.data
+            };
+        }
+
+        if (window.DataGuardBridge && typeof window.DataGuardBridge.performAction === 'function') {
+            window.DataGuardBridge.performAction("sendWish", JSON.stringify(payload));
+        } else {
+            console.error("DataGuardBridge not available");
+        }
+
+        messageInput.value = '';
+        currentAttachment = null;
+        attachBtn.style.color = '#8b5cf6';
+        setTimeout(refreshHistory, 100);
+    }
+
+    function fulfillWish() {
+        let text = messageInput.value.trim();
+        if (!text && !currentAttachment) {
+            let payload = { action: "fulfillWish", message: "" };
+            if (window.DataGuardBridge && typeof window.DataGuardBridge.performAction === 'function') {
+                window.DataGuardBridge.performAction("fulfillWish", JSON.stringify(payload));
+            }
+            setTimeout(refreshHistory, 100);
+            return;
+        }
+        if (!text) text = "✨ 诚真 ✨";
+
+        let payload = { action: "fulfillWish", message: text };
+        if (currentAttachment) {
+            payload.attachment = {
+                name: currentAttachment.name,
+                type: currentAttachment.type,
+                data: currentAttachment.data
+            };
+        }
+
+        if (window.DataGuardBridge && typeof window.DataGuardBridge.performAction === 'function') {
+            window.DataGuardBridge.performAction("fulfillWish", JSON.stringify(payload));
+        }
+
+        messageInput.value = '';
+        currentAttachment = null;
+        attachBtn.style.color = '#8b5cf6';
+        setTimeout(refreshHistory, 100);
+    }
+
+    function selectAttachment() {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*,application/pdf,text/plain';
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    currentAttachment = {
+                        name: file.name,
+                        type: file.type,
+                        data: evt.target.result   // base64 dataURL
+                    };
+                    attachBtn.style.color = '#f59e0b';
+                    // 可选：显示提示
+                    console.log("已选择附件:", file.name);
+                };
+                reader.onerror = function() {
+                    alert("文件读取失败，请重试");
+                };
+                reader.readAsDataURL(file);
+            }
+            document.body.removeChild(fileInput);
+        };
+        fileInput.click();
+    }
+
+    async function loadDailyTip() {
+        let tip = "加载中...";
+        if (window.DataGuardBridge && typeof window.DataGuardBridge.getDailyTip === 'function') {
+            try {
+                tip = window.DataGuardBridge.getDailyTip();
+            } catch(e) {
+                console.error("获取今日提示失败:", e);
+            }
+        }
+        document.getElementById('dailyTip').innerHTML = marked.parse(tip);
+    }
+
+    // 定时刷新（每60秒）
+    setInterval(() => {
+        loadDailyTip();
+        refreshHistory();
+    }, 30000);
+
+    (async function init() {
+        await loadDailyTip();
+        refreshHistory();
+
+        sendBtn.addEventListener('click', sendWish);
+        fulfillBtn.addEventListener('click', fulfillWish);
+        attachBtn.addEventListener('click', selectAttachment);
+
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendWish();
+            }
+        });
+
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+        });
+        messageInput.style.height = 'auto';
+        messageInput.style.height = Math.min(messageInput.scrollHeight, 160) + 'px';
+    })();
+</script>
+</body>
+</html>
