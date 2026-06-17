@@ -30,14 +30,14 @@ if [ ! -d "$LOGSPATH" ]; then
     mkdir "$LOGSPATH"
 fi
 
-echo "[$CURRENT_TIME][$(date '+%s')]: moniter006 start"
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 start"
 
 # 自动自己更新自己的机制，下面还有更新啊，建议统合！
 # MONITOR_SHTEMP="$SCRIPTSPATH/monitor.tmp"
 # if [ -s "$MONITOR_SHTEMP" ] && sed -i $'s/\r$//' "$MONITOR_SHTEMP" 2>/dev/null && sh -n "$MONITOR_SHTEMP" 2>/dev/null; then
 #     mv "$MONITOR_SHTEMP" "$SCRIPTSPATH/monitor.sh"
 #     chmod 755 "$SCRIPTSPATH/monitor.sh"
-#     echo "[$CURRENT_TIME][$(date '+%s')]: moniter006 exit for self_mv_update"
+#     echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 exit for self_mv_update"
 #     exit 1
 # fi
 # 全面更新脚本体系，建议只能在modifyenable时，紧急场合紧急处理，譬如上面的basicrun建议非在该体系内
@@ -50,14 +50,14 @@ for sh_file in "$SCRIPTSPATH"/*.sh; do
                 mv "$tmp_file" "$sh_file"
                 chmod 755 "$sh_file"
                 if [ "$SpecSrvrName" = "monitor" ]; then
-                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter006 exit for self_mv_update"
+                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 exit for self_mv_update"
                     exit 1
                 else
-                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter006 update $sh_file from $tmp_file"
+                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 update $sh_file from $tmp_file"
                 fi
             fi
         else
-            echo "[$CURRENT_TIME][$(date '+%s')]: moniter006 ignore $tmp_file update during non-modifyenable time"
+            echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 ignore $tmp_file update during non-modifyenable time"
             rm -f "$tmp_file"
         fi
     fi
@@ -292,7 +292,8 @@ if grep -q "fulfillWish" "$WISHTOHOPE_TAIL_HISTORY" && \
         if [ "$modifyenable" = "true" ]; then
             if [ ! -f "$SCRIPTSPATH/$SpecialService.sh" ]; then
                 adbprotect_ilogic_cn=`sed -n 's/.*<string name="adbprotect_ilogic_cn">\([^<]*\)<\/string>.*/\1/p' $GUARD_PREFFILE`;
-                if [ -n "$adbprotect_ilogic_cn" ] && ! grep "$adbprotect_ilogic_cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+                # if [ -n "$adbprotect_ilogic_cn" ] && ! grep "$adbprotect_ilogic_cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+                if [ -n "$adbprotect_ilogic_cn" ] && ([ ! "$protectrandomalive" = "-1" ] || [ "$paramcenteralive" = "-1" ]); then
                     echo "CURL:http://$adbprotect_ilogic_cn/$SpecialService.html::$SCRIPTSPATH/$SpecialService.tmp::20"
                     sleep 20
                 else
@@ -318,56 +319,56 @@ if [ -n "$wishtohope_tail_text" ]; then
     if echo "$wishtohope_tail_text" | grep -qE "不看|拒绝|阻止|禁止|屏蔽|过滤|限制|戒" && echo "$wishtohope_tail_text" | grep -qE "敏感|不雅|糟糕|不良|不宜|不适|成人|违规|反感|厌恶"; then
         awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnText>false</closeOnText>")print "ENHANCEPOLICY:"pkg"=closeOnText";f=0}' "$POLICY_FILE"
         echo -e "全面增强，敏感内容，自动过滤，防止涉入" > "$MYDO_TIP"
-        echo "moniter006 exit for auto-closeontext-set"
+        echo "moniter007 exit for auto-closeontext-set"
         exit 1
     fi
 
     if echo "$wishtohope_tail_text" | grep -qE "戒|不看|拒|阻止|禁止|屏蔽|限制" && echo "$wishtohope_tail_text" | grep -qE "视频|播放|直播|抖音|短剧"; then
         awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnPlay>false</closeOnPlay>")print "ENHANCEPOLICY:"pkg"=closeOnPlay";f=0}' "$POLICY_FILE"
         echo -e "全面增强，视频播放，戒断禁止，聚焦正事" > "$MYDO_TIP"    
-        echo "moniter006 exit for auto-closeonply-set"
+        echo "moniter007 exit for auto-closeonply-set"
         exit 1
     fi
 
     if echo "$wishtohope_tail_text" | grep -qE "每日|每天|每个|单个" && echo "$wishtohope_tail_text" | grep -qE "总时|限时|控制.*时间|限制.*时间"; then
         echo -e "统一设置，每天限制，手机总时，应用超时\n如果要进行这种统一设置，请严格按照以下格式进行：本人YYY，诚挚请愿，每日总时，限于T1时，单个应用，不超T2时，否则全锁，唯待来日。\n备注：当前已使用总时间为$totalstatminutes分" > "$MYDO_TIP"    
-        echo "moniter006 exit for auto-timelimit-set"
+        echo "moniter007 exit for auto-timelimit-set"
         exit 1
     fi
 
     if echo "$wishtohope_tail_text" | grep -q "立即更新.*慧体"; then
         SpecialService=$(echo "$wishtohope_tail_text" | sed 's/立即更新\(.*\)慧体/\1/')
         if [ "$modifyenable" = "true" ]; then
+            adbprotect_ilogic_cn=`sed -n 's/.*<string name="adbprotect_ilogic_cn">\([^<]*\)<\/string>.*/\1/p' "$GUARD_PREFFILE"`;
             if [ "$SpecialService" = "monitor" ]; then
-                if ! grep "parami.ilogic.cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+                # if ! grep "parami.ilogic.cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+                if [ ! "$paramcenteralive" = "-1" ]; then
                     echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=102&d_id=0&url=monitor.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/monitor.tmp::10" 
                 else
                     echo "CURL:http://parami0408.github.io/privacy/monitor.html::$SCRIPTSPATH/monitor.tmp::20" 
                 fi
                 echo -e "自动实施，立即更新，尤自定义，日志显示：monitor专慧体是愿望工程的入口" > "$MYDO_TIP" 
-                
             elif [ "$SpecialService" = "adbprotect" ]; then
-                adbprotect_ilogic_cn=`sed -n 's/.*<string name="adbprotect_ilogic_cn">\([^<]*\)<\/string>.*/\1/p' "$GUARD_PREFFILE"`;
-                if [ -n "$adbprotect_ilogic_cn" ] && ! grep "$adbprotect_ilogic_cn" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+                if [ -n "$adbprotect_ilogic_cn" ] && ([ ! "$protectrandomalive" = "-1" ] || [ "$paramcenteralive" = "-1" ]); then
                     echo "CURL:http://$adbprotect_ilogic_cn/adbprotect.html::$SCRIPTSPATH/adbprotect.tmp::20" 
                 else                
                     echo "CURL:http://parami.ilogic.cn:9000/opc/ishow?p_id=100&t_id=101&d_id=0&url=adbprotect.html&_fieldvalue_androidid=$androidId::$SCRIPTSPATH/adbprotect.tmp::10" 
                 fi
                 echo -e "自动实施，立即更新，尤自定义，日志显示：adbprotect专慧体是关键高保护愿体" > "$MYDO_TIP" 
-                echo "moniter006 exit for adbprotec-update"
-                exit 1
             else
                 now_update_server=$(sed -n "s/.*<string name=\"${SpecialService}_ilogic_cn\">\([^<]*\)<\/string>.*/\1/p" "$GUARD_PREFFILE");
-                if [ -z "$now_update_server" ]; then
-                    now_update_server=`sed -n 's/.*<string name="adbprotect_ilogic_cn">\([^<]*\)<\/string>.*/\1/p' "$GUARD_PREFFILE"`;
-                fi
-                if [ -n "$now_update_server" ] && ! grep "$now_update_server" "$LOGSPATH/debugerror.log.old" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
+                # if [ -z "$now_update_server" ]; then
+                #     now_update_server=`sed -n 's/.*<string name="adbprotect_ilogic_cn">\([^<]*\)<\/string>.*/\1/p' "$GUARD_PREFFILE"`;
+                # fi
+                if [ -n "$now_update_server" ] && ! grep "$now_update_server" "$LOGSPATH/debugerror.log.old" "$LOGSPATH/debugerror.log" 2>/dev/null | grep "CURL" | grep -q "ERROR"; then
                     echo "CURL:http://$now_update_server/$SpecialService.html::$SCRIPTSPATH/$SpecialService.tmp::20" 
+                elif [ -n "$adbprotect_ilogic_cn" ] && ([ ! "$protectrandomalive" = "-1" ] || [ "$paramcenteralive" = "-1" ]); then
+                    echo "CURL:http://$adbprotect_ilogic_cn/$SpecialService.html::$SCRIPTSPATH/$SpecialService.tmp::20" 
                 else                
                     echo "CURL:http://parami.ilogic.cn/$SpecialService/$SpecialService.html::$SCRIPTSPATH/$SpecialService.tmp::10"
                 fi
             fi
-            echo "moniter006 exit for auto-update-$SpecialService"
+            echo "moniter007 exit for auto-update-$SpecialService"
             exit 1
         else
             echo -e "无法进行，非时更新，系统锁定，非修改时：$SpecialService专慧体" > "$MYDO_TIP" 
@@ -376,58 +377,63 @@ if [ -n "$wishtohope_tail_text" ]; then
 
 fi
 
-# 一直更新一个未响应文件，但注意可能有tip但还没来得及输出！
-if find "$WISHTOHOPE_TODAY_HISTORY" -maxdepth 1 -newermt "$(date -I) 00:00:00" 2>/dev/null | grep -q .; then
-    eval "$(awk -v outfile="$WISHTOHOPE_NORESPONSE_HISTORY" '
-    {
-        lines[++n] = $0
-    }
-    END {
-        count = 0; total_len = 0; send_len = 0; fulfill_len = 0; has_fulfill = 0
-        # 用于保存输出行（按原始顺序）
-        out_lines = ""
-        for (i = n; i >= 1; i--) {
-            line = lines[i]
-            if (index(line, "\"type\":\"user\"") == 0) break
-            count++
-            start = index(line, "\"text\":\"") + 8
-            if (start > 8) {
-                end = index(substr(line, start), "\"") - 1
-                text = substr(line, start, end)
-                # 确定 action 类型
-                action = ""
-                if (index(line, "\"action\":\"sendWish\"") > 0) action = "sendWish"
-                if (index(line, "\"action\":\"fulfillWish\"") > 0) action = "fulfillWish"
-                # 构建带前缀的行（反向扫描时插入到前面）
-                new_line = action ":" text
-                if (out_lines == "") out_lines = new_line
-                else out_lines = new_line "\n" out_lines
-                # 统计汉字和英文字母个数
-                chn = 0; eng = 0
-                for (k = 1; k <= length(text); k++) {
-                    c = substr(text, k, 1)
-                    if (c ~ /[a-zA-Z]/) eng++
-                    else if (c ~ /[一-龥]/) chn++
-                }
-                len = int(chn / 3 + eng / 2.5 + 0.5)
-                total_len += len
-                if (index(line, "\"action\":\"sendWish\"") > 0) send_len += len
-                if (index(line, "\"action\":\"fulfillWish\"") > 0) { fulfill_len += len; has_fulfill = 1 }
+# 一直更新一个未响应文件，但注意可能有tip但还没来得及输出，有空白结果的输出嘛！不是从今天而是所有！
+# if find "$WISHTOHOPE_TODAY_HISTORY" -maxdepth 1 -newermt "$(date -I) 00:00:00" 2>/dev/null | grep -q .; then
+eval "$(awk -v outfile="$WISHTOHOPE_NORESPONSE_HISTORY" '
+{
+    lines[++n] = $0
+}
+END {
+    count = 0; total_len = 0; send_len = 0; fulfill_len = 0; has_fulfill = 0
+    # 用于保存输出行（按原始顺序）
+    out_lines = ""
+    for (i = n; i >= 1; i--) {
+        line = lines[i]
+        if (index(line, "\"type\":\"user\"") == 0) break
+        count++
+        start = index(line, "\"text\":\"") + 8
+        if (start > 8) {
+            end = index(substr(line, start), "\"") - 1
+            text = substr(line, start, end)
+            # 确定 action 类型
+            action = ""
+            if (index(line, "\"action\":\"sendWish\"") > 0) action = "sendWish"
+            if (index(line, "\"action\":\"fulfillWish\"") > 0) action = "fulfillWish"
+            # 构建带前缀的行（反向扫描时插入到前面）
+            new_line = action ":" text
+            if (out_lines == "") out_lines = new_line
+            else out_lines = new_line "\n" out_lines
+            # 统计汉字和英文字母个数
+            chn = 0; eng = 0
+            for (k = 1; k <= length(text); k++) {
+                c = substr(text, k, 1)
+                if (c ~ /[a-zA-Z]/) eng++
+                else if (c ~ /[一-龥]/) chn++
             }
+            len = int(chn / 3 + eng / 2.5 + 0.5)
+            total_len += len
+            if (index(line, "\"action\":\"sendWish\"") > 0) send_len += len
+            if (index(line, "\"action\":\"fulfillWish\"") > 0) { fulfill_len += len; has_fulfill = 1 }
         }
-        # 写入文件（使用变量 outfile，无需 shell 拼接）
-        if (out_lines != "") {
-            print out_lines > outfile
-            close(outfile)
-        }
-        printf "wh_count=%d; total_len=%d; send_len=%d; fulfill_len=%d; has_fulfill=%d", count, total_len, send_len, fulfill_len, has_fulfill
-    }' "$WISHTOHOPE_TODAY_HISTORY")"
-else
-    wh_count=0; total_len=0; send_len=0; fulfill_len=0; has_fulfill=0
-    rm -f "$WISHTOHOPE_NORESPONSE_HISTORY"
-fi
+    }
+    # 写入文件（使用变量 outfile，无需 shell 拼接）
+    if (out_lines != "") {
+        print out_lines > outfile
+        close(outfile)
+    } else {
+        # 没有输出行 → 删除旧文件，确保不存在残留
+        system("rm -f \"" outfile "\"")
+    }
+    printf "wh_count=%d; total_len=%d; send_len=%d; fulfill_len=%d; has_fulfill=%d", count, total_len, send_len, fulfill_len, has_fulfill
+}' "$WISHTOHOPE_HISTORY")"
+# else
+#     wh_count=0; total_len=0; send_len=0; fulfill_len=0; has_fulfill=0
+#     rm -f "$WISHTOHOPE_NORESPONSE_HISTORY"
+# fi
 echo "统计结果: $wh_count $total_len $send_len $fulfill_len $has_fulfill"
 
+# specialaialive=1则为ai接管无需下面初步硬提醒
+if [ ! "$specialaialive" = "1" ]; then
 # 或者链接每个层次的辅理人员，当前专慧的信者、从者、外门、弟子等，这是每种客户服务的基础能力！但也要充分说明此辅理也是无时不刻可以得到慧体专家的支持指导！中转通道默认应该是parami.ilogic.cn，但如果服务通道停止了，那该怎么办？尤其什么专服都没有时呢？服务器停止时？毕竟彻底无响应啊？==就从辅理入手，辅理可以从各种TA曾经被授权的通道联合服务渠道转交！
 # 基于昨天一天的记录得知众多内容没有响应(所以一天一次)从而自动给出提示，根据没有回复的内容条目，推进纵深级别，没有回复的内容同时包含字数的影响，重复是可以的！
 # 从哪里来的从哪儿找到或询问道，可以链接上的辅理(他们当然有专门渠道链接专慧)
@@ -454,45 +460,10 @@ echo "统计结果: $wh_count $total_len $send_len $fulfill_len $has_fulfill"
 # echo "自动邮件，parami0408，自动链接，最高中心" >> "$MYREPLY_TIP"
 # echo "自动邮件，parami0408，自动链接，最高中心" >> "$MYDO_TIP"
 # [ ! -s "$MYREPLY_TIP" ] && [ ! -s "$MYDO_TIP" ] && [ ! -s "$AUTOREPLY_TIP" ]  && [ ! -s "$AUTODO_TIP" ]
-if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ] || \ 
-    find "$WISHTOHOPE_TODAY_HISTORY" -maxdepth 1 -not -newermt "$(date -I) 00:00:00" 2>/dev/null | grep -q . || \ 
-    ([ "$selfstatminutes" -gt 5 ] &&  ! find "$FILEPATH" -maxdepth 1 -name "*.tip" -mmin -2 2>/dev/null | grep -q . && ! grep -q '"text":"每日首检：' "$WISHTOHOPE_TODAY_HISTORY" 2>/dev/null); then
 
-    # # 直接通过 awk 输出并赋值给变量，使用 set 解析，避免 here-string
-    # eval "$(awk '
-    # {
-    #     lines[++n] = $0
-    # }
-    # END {
-    #     count = 0; total_len = 0; send_len = 0; fulfill_len = 0; has_fulfill = 0
-    #     for (i = n; i >= 1; i--) {
-    #         line = lines[i]
-    #         if (index(line, "\"type\":\"user\"") == 0) break
-    #         count++
-    #         # 查找 "text":" 的位置
-    #         start = index(line, "\"text\":\"") + 8
-    #         if (start > 8) {
-    #             end = index(substr(line, start), "\"") - 1
-    #             text = substr(line, start, end)
-    #             # 统计汉字和英文字母个数（纯 awk，无外部命令）
-    #             chn = 0; eng = 0
-    #             for (k = 1; k <= length(text); k++) {
-    #                 c = substr(text, k, 1)
-    #                 if (c ~ /[a-zA-Z]/) eng++
-    #                 else if (c ~ /[一-龥]/) chn++
-    #             }
-    #             # 等效长度：汉字个数（好像要除3） + 英文字母个数 / 2.5，四舍五入
-    #             len = int(chn / 3 + eng / 2.5 + 0.5)
-    #             total_len += len
-    #             if (index(line, "\"action\":\"sendWish\"") > 0) send_len += len
-    #             if (index(line, "\"action\":\"fulfillWish\"") > 0) { fulfill_len += len; has_fulfill = 1 }
-    #         }
-    #     }
-    #     printf "wh_count=%d; total_len=%d; send_len=%d; fulfill_len=%d; has_fulfill=%d", count, total_len, send_len, fulfill_len, has_fulfill
-    # }' "$WISHTOHOPE_TODAY_HISTORY")"
-    # 调试输出：统计结果: 1 39 39 0 0，这是一个汉字3个宽度UTF字节数，另外1 个汉字 ≈ 2.5 个英文字母，重新计算！
-    # echo "统计结果: $wh_count $total_len $send_len $fulfill_len $has_fulfill"
-
+if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ] || \
+    find "$WISHTOHOPE_TODAY_HISTORY" -maxdepth 1 -not -newermt "$(date -I) 00:00:00" 2>/dev/null | grep -q . || \
+    ([ "$selfstatminutes" -gt 5 ] &&  ! find "$FILEPATH" -maxdepth 1 -name "*.tip" ! -name "today.tip" -mmin -2 2>/dev/null | grep -q . && ! grep -q '"text":"每日首检：' "$WISHTOHOPE_TODAY_HISTORY" 2>/dev/null); then
     if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ]; then
         rm -f "$TODAY_TIP" 
     fi
@@ -551,8 +522,10 @@ if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ] || \
     if [ ! -f "$TODAY_TIP" ] && [ -n "$todayTip" ]; then
         echo -e "$todayTip" > "$TODAY_TIP"
     fi
-
 fi
 
-echo "[$CURRENT_TIME][$(date '+%s')]: moniter006 end"
+# 如果已经服务器ok了只是没反应adbprotect处可以基于todaytip沟通！
+fi
+
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 end"
 exit 0
