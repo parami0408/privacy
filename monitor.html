@@ -23,6 +23,7 @@ WISHTOHOPE_TODAY_HISTORY="$FILEPATH/wishtohope.today.history"
 WISHTOHOPE_JUSTNOW_HISTORY="$FILEPATH/wishtohope.justnow.history"
 WISHTOHOPE_TAIL_HISTORY="$FILEPATH/wishtohope.tail.history"
 WISHTOHOPE_NORESPONSE_HISTORY="$FILEPATH/wishtohope.noresponse.history"
+WISHTOHOPE_NORESPONSE_STATISTICS="$FILEPATH/wishtohope.noresponse.statistics"
 
 CURRENT_TIME=$(date '+%Y-%m-%d %H:%M:%S')
 
@@ -30,7 +31,7 @@ if [ ! -d "$LOGSPATH" ]; then
     mkdir "$LOGSPATH"
 fi
 
-echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 start"
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter007.1 start"
 
 # 自动自己更新自己的机制，下面还有更新啊，建议统合！
 # MONITOR_SHTEMP="$SCRIPTSPATH/monitor.tmp"
@@ -401,8 +402,6 @@ END {
             if (index(line, "\"action\":\"fulfillWish\"") > 0) action = "fulfillWish"
             # 构建带前缀的行（反向扫描时插入到前面）
             new_line = action ":" text
-            if (out_lines == "") out_lines = new_line
-            else out_lines = new_line "\n" out_lines
             # 统计汉字和英文字母个数
             chn = 0; eng = 0
             for (k = 1; k <= length(text); k++) {
@@ -414,6 +413,9 @@ END {
             total_len += len
             if (index(line, "\"action\":\"sendWish\"") > 0) send_len += len
             if (index(line, "\"action\":\"fulfillWish\"") > 0) { fulfill_len += len; has_fulfill = 1 }
+            if (chn_count < 6) continue
+            if (out_lines == "") out_lines = new_line
+            else out_lines = new_line "\n" out_lines
         }
     }
     # 写入文件（使用变量 outfile，无需 shell 拼接）
@@ -430,6 +432,8 @@ END {
 #     wh_count=0; total_len=0; send_len=0; fulfill_len=0; has_fulfill=0
 #     rm -f "$WISHTOHOPE_NORESPONSE_HISTORY"
 # fi
+echo -e "wh_count=$wh_count\ntotal_len=$total_len\naverage_len=$(( ntotal_len/wh_count ))\nsend_len=$send_len\fulfill_len=$fulfill_len\nhas_fulfill=$has_fulfill" > "$WISHTOHOPE_NORESPONSE_STATISTICS"
+
 echo "统计结果: $wh_count $total_len $send_len $fulfill_len $has_fulfill"
 
 # specialaialive=1则为ai接管无需下面初步硬提醒
