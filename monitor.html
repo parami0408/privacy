@@ -31,14 +31,14 @@ if [ ! -d "$LOGSPATH" ]; then
     mkdir "$LOGSPATH"
 fi
 
-echo "[$CURRENT_TIME][$(date '+%s')]: moniter007.2 start"
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter008 start"
 
 # 自动自己更新自己的机制，下面还有更新啊，建议统合！
 # MONITOR_SHTEMP="$SCRIPTSPATH/monitor.tmp"
 # if [ -s "$MONITOR_SHTEMP" ] && sed -i $'s/\r$//' "$MONITOR_SHTEMP" 2>/dev/null && sh -n "$MONITOR_SHTEMP" 2>/dev/null; then
 #     mv "$MONITOR_SHTEMP" "$SCRIPTSPATH/monitor.sh"
 #     chmod 755 "$SCRIPTSPATH/monitor.sh"
-#     echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 exit for self_mv_update"
+#     echo "[$CURRENT_TIME][$(date '+%s')]: moniter008 exit for self_mv_update"
 #     exit 1
 # fi
 # 全面更新脚本体系，建议只能在modifyenable时，紧急场合紧急处理，譬如上面的basicrun建议非在该体系内
@@ -51,14 +51,14 @@ for sh_file in "$SCRIPTSPATH"/*.sh; do
                 mv "$tmp_file" "$sh_file"
                 chmod 755 "$sh_file"
                 if [ "$SpecSrvrName" = "monitor" ]; then
-                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 exit for self_mv_update"
+                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter008 exit for self_mv_update"
                     exit 1
                 else
-                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 update $sh_file from $tmp_file"
+                    echo "[$CURRENT_TIME][$(date '+%s')]: moniter008 update $sh_file from $tmp_file"
                 fi
             fi
         else
-            echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 ignore $tmp_file update during non-modifyenable time"
+            echo "[$CURRENT_TIME][$(date '+%s')]: moniter008 ignore $tmp_file update during non-modifyenable time"
             rm -f "$tmp_file"
         fi
     fi
@@ -71,23 +71,26 @@ echo "[$CURRENT_TIME] androidId=$androidId totalstatminutes=$totalstatminutes, s
 # 参照上面的日志输出，可以各种手动定义自己的日志监控
 ${log_out_set}
 
-if [ "$modifyenable" = "false" ] && [ "$adbenable" = "0" ]; then
-    if [ -f "$FILEPATH/packages.modifydisable.before" ]; then
-        pm list packages -3 | sed 's/^package://' > $FILEPATH/packages.modifydisable.current
-        diff $FILEPATH/packages.modifydisable.before $FILEPATH/packages.modifydisable.current | grep -E '^\+[^+]' | sed 's/^+//' | while read -r pkg; do
-            if ! grep -q "package=\"$pkg\"" "$POLICY_FILE" 2>/dev/null; then
-                echo "保护期间禁止软件：$pkg"
-                echo "ADD_CLOSE_POLICY:$pkg"
-            fi
-        done
+# 内核补缺，但安全性不够，可以锁定补足
+if [ "$versionCode" -lt 118 ]; then
+    if [ "$modifyenable" = "false" ] && [ "$adbenable" = "0" ]; then
+        if [ -f "$FILEPATH/packages.modifydisable.before" ]; then
+            pm list packages -3 | sed 's/^package://' > $FILEPATH/packages.modifydisable.current
+            diff $FILEPATH/packages.modifydisable.before $FILEPATH/packages.modifydisable.current | grep -E '^\+[^+]' | sed 's/^+//' | while read -r pkg; do
+                if ! grep -q "package=\"$pkg\"" "$POLICY_FILE" 2>/dev/null; then
+                    echo "保护期间禁止软件：$pkg"
+                    echo "ADD_CLOSE_POLICY:$pkg"
+                fi
+            done
+        else
+            pm list packages -3 | sed 's/^package://' > $FILEPATH/packages.modifydisable.before
+        fi
     else
-        pm list packages -3 | sed 's/^package://' > $FILEPATH/packages.modifydisable.before
+        #清空上面的pm存储，只保护调试的情况下不能使用新软件除非修改策略
+        rm -f $FILEPATH/packages.modifydisable.*
+        # rm $FILEPATH/packages.*
+        # pm list packages -3
     fi
-else
-    #清空上面的pm存储，只保护调试的情况下不能使用新软件除非修改策略
-    rm -f $FILEPATH/packages.modifydisable.*
-    # rm $FILEPATH/packages.*
-    # pm list packages -3
 fi
 
 # wishtohope.curl的增量上传模型，上传前一天的聊天历史记录，往往覆盖了最后的内容
@@ -320,20 +323,20 @@ if [ -n "$wishtohope_tail_text" ]; then
     if echo "$wishtohope_tail_text" | grep -qE "不看|拒绝|阻止|禁止|屏蔽|过滤|限制|戒" && echo "$wishtohope_tail_text" | grep -qE "敏感|不雅|糟糕|不良|不宜|不适|成人|违规|反感|厌恶"; then
         awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnText>false</closeOnText>")print "ENHANCEPOLICY:"pkg"=closeOnText";f=0}' "$POLICY_FILE"
         echo -e "全面增强，敏感内容，自动过滤，防止涉入" > "$MYDO_TIP"
-        echo "moniter007 exit for auto-closeontext-set"
+        echo "moniter008 exit for auto-closeontext-set"
         exit 1
     fi
 
     if echo "$wishtohope_tail_text" | grep -qE "戒|不看|拒|阻止|禁止|屏蔽|限制" && echo "$wishtohope_tail_text" | grep -qE "视频|播放|直播|抖音|短剧"; then
         awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnPlay>false</closeOnPlay>")print "ENHANCEPOLICY:"pkg"=closeOnPlay";f=0}' "$POLICY_FILE"
         echo -e "全面增强，视频播放，戒断禁止，聚焦正事" > "$MYDO_TIP"    
-        echo "moniter007 exit for auto-closeonply-set"
+        echo "moniter008 exit for auto-closeonply-set"
         exit 1
     fi
 
     if echo "$wishtohope_tail_text" | grep -qE "每日|每天|每个|单个" && echo "$wishtohope_tail_text" | grep -qE "总时|限时|控制.*时间|限制.*时间"; then
         echo -e "统一设置，每天限制，手机总时，应用超时\n如果要进行这种统一设置，请严格按照以下格式进行：本人YYY，诚挚请愿，每日总时，限于T1时，单个应用，不超T2时，否则全锁，唯待来日。\n备注：当前已使用总时间为$totalstatminutes分" > "$MYDO_TIP"    
-        echo "moniter007 exit for auto-timelimit-set"
+        echo "moniter008 exit for auto-timelimit-set"
         exit 1
     fi
 
@@ -369,7 +372,7 @@ if [ -n "$wishtohope_tail_text" ]; then
                     echo "CURL:http://parami.ilogic.cn/$SpecialService/$SpecialService.html::$SCRIPTSPATH/$SpecialService.tmp::10"
                 fi
             fi
-            echo "moniter007 exit for auto-update-$SpecialService"
+            echo "moniter008 exit for auto-update-$SpecialService"
             exit 1
         else
             echo -e "无法进行，非时更新，系统锁定，非修改时：$SpecialService专慧体" > "$MYDO_TIP" 
@@ -413,7 +416,8 @@ END {
             total_len += len
             if (index(line, "\"action\":\"sendWish\"") > 0) send_len += len
             if (index(line, "\"action\":\"fulfillWish\"") > 0) { fulfill_len += len; has_fulfill = 1 }
-            if (len < 6) continue
+            # if (len < 6) continue
+            if (chn <= 18) continue
             if (out_lines == "") out_lines = new_line
             else out_lines = new_line "\n" out_lines
         }
@@ -531,5 +535,5 @@ fi
 # 如果已经服务器ok了只是没反应adbprotect处可以基于todaytip沟通！
 fi
 
-echo "[$CURRENT_TIME][$(date '+%s')]: moniter007 end"
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter008 end"
 exit 0
