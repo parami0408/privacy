@@ -371,6 +371,7 @@ if [ -n "$wishtohope_tail_text" ]; then
                 else                
                     echo "CURL:http://parami.ilogic.cn/$SpecialService/$SpecialService.html::$SCRIPTSPATH/$SpecialService.tmp::10"
                 fi
+                echo -e "自动实施，立即更新，尤自定义，日志显示：定制专慧体$SpecialService" > "$MYDO_TIP" 
             fi
             echo "moniter008 exit for auto-update-$SpecialService"
             exit 1
@@ -538,4 +539,3 @@ fi
 
 echo "[$CURRENT_TIME][$(date '+%s')]: moniter008 end"
 exit 0
-                
