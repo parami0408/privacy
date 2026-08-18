@@ -56,6 +56,9 @@ for sh_file in "$SCRIPTSPATH"/*.sh; do
                 else
                     echo "[$CURRENT_TIME][$(date '+%s')]: moniter008 update $sh_file from $tmp_file"
                 fi
+            else
+                echo "[$CURRENT_TIME][$(date '+%s')]: Error update from $tmp_file"
+                rm -f "$tmp_file"
             fi
         else
             echo "[$CURRENT_TIME][$(date '+%s')]: moniter008 ignore $tmp_file update during non-modifyenable time"
@@ -267,8 +270,9 @@ for chdPackage in $chdPackages; do
     fi
 done
 
+# 更老的手机不支持date -I，改成更用的date +%Y-%m-%d
 # find "$TODAY_TIP" -maxdepth 1 -not -newermt "$(date -I) 00:00:00" -delete
-if [ -f "$TODAY_TIP" ] && find "$TODAY_TIP" -maxdepth 1 -not -newermt "$(date -I) 00:00:00" 2>/dev/null | grep -q .; then
+if [ -f "$TODAY_TIP" ] && find "$TODAY_TIP" -maxdepth 1 -not -newermt "$(date +%Y-%m-%d) 00:00:00" 2>/dev/null | grep -q .; then
     sleep $(( (RANDOM % 300) / 10 )).$(( (RANDOM % 300) % 10 ))
     rm -f "$FILEPATH"/*.tip
 fi
@@ -290,7 +294,7 @@ if grep -q "fulfillWish" "$WISHTOHOPE_TAIL_HISTORY" && \
     SpecialService=$(sed -n 's/.*"text":"ImportSpecialService=\([a-z]*\)".*/\1/p' "$WISHTOHOPE_TAIL_HISTORY")
 
     # adbprotect的特殊性，参上！
-    if [ "$SpecialService" eq "adbprotect" ]; then
+    if [ "$SpecialService" = "adbprotect" ]; then
         echo -e "高保护愿，特专慧体，暂难导入，下载安装\n说明：具体进一步发心诚真寻找更高方案。" >> "$MYDO_TIP"
     elif [ -n "$SpecialService" ] && [ ! -f "$SCRIPTSPATH/$SpecialService.sh" ]; then
         if [ "$modifyenable" = "true" ]; then
@@ -471,7 +475,7 @@ if [ ! "$specialaialive" = "1" ]; then
 # [ ! -s "$MYREPLY_TIP" ] && [ ! -s "$MYDO_TIP" ] && [ ! -s "$AUTOREPLY_TIP" ]  && [ ! -s "$AUTODO_TIP" ]
 
 if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ] || \
-    find "$WISHTOHOPE_TODAY_HISTORY" -maxdepth 1 -not -newermt "$(date -I) 00:00:00" 2>/dev/null | grep -q . || \
+    find "$WISHTOHOPE_TODAY_HISTORY" -maxdepth 1 -not -newermt "$(date +%Y-%m-%d) 00:00:00" 2>/dev/null | grep -q . || \
     ([ "$selfstatminutes" -gt 5 ] &&  ! find "$FILEPATH" -maxdepth 1 -name "*.tip" ! -name "today.tip" -mmin -2 2>/dev/null | grep -q . && ! grep -q '"text":"每日首检：' "$WISHTOHOPE_TODAY_HISTORY" 2>/dev/null); then
     if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ]; then
         rm -f "$TODAY_TIP" 
