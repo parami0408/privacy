@@ -339,7 +339,18 @@ if [ -n "$wishtohope_tail_text" ]; then
     fi
 
     if echo "$wishtohope_tail_text" | grep -qE "每日|每天|每个|单个" && echo "$wishtohope_tail_text" | grep -qE "总时|限时|控制.*时间|限制.*时间"; then
-        echo -e "统一设置，每天限制，手机总时，应用超时\n如果要进行这种统一设置，请严格按照以下格式进行：本人YYY，诚挚请愿，每日总时，限于T1时，单个应用，不超T2时，否则全锁，唯待来日。\n备注：当前已使用总时间为$totalstatminutes分" > "$MYDO_TIP"    
+        echo -e "统一设置，每天限制，手机总时，应用超时\n如果要进行这种统一设置，请严格按照以下格式进行：本人YYY，诚挚请愿，每日总分，限于T1分，单个应用，不超T2分，否则全锁，唯待来日。\n备注：当前已使用总时间为$totalstatminutes分" > "$MYDO_TIP"    
+        echo "moniter008 exit for auto-timelimit-tip"
+        # echo "SET_GUARD_PREF:device_max_dayminutes=360"
+        # echo "SET_GUARD_PREF:every_app_dayminutes=120"
+        exit 1
+    fi
+    if echo "$wishtohope_tail_text" | grep -qE "本人.*，诚挚请愿，每日总分，限于[0-9]+分，单个应用，不超[0-9]+分，否则全锁，唯待来日。"; then
+        name=$(echo "$wishtohope_tail_text" | grep -oE "本人[^，]+" | sed 's/本人//')
+        maxdayminutes=$(echo "$wishtohope_tail_text" | grep -oE "限于[0-9]+" | sed 's/限于//')
+        appdayminutes=$(echo "$wishtohope_tail_text" | grep -oE "不超[0-9]+" | sed 's/不超//g')
+        echo "SET_GUARD_PREF:device_max_dayminutes=$maxdayminutes"
+        echo "SET_GUARD_PREF:every_app_dayminutes=$appdayminutes"
         echo "moniter008 exit for auto-timelimit-set"
         exit 1
     fi
