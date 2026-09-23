@@ -123,6 +123,14 @@
         .message-item.system.chengzhen .message-bubble {
             border: 1px solid #c2410c;
         }
+
+        /* 长按选中整条内容（排除历史消息） */
+        .message-item.user .message-text,
+        .message-item.system:not(.historical) .message-bubble > div:first-child {
+            -webkit-user-select: all;
+            user-select: all;
+        }
+
         .message-attachment {
             font-size: 12px;
             color: #8b5cf6;
