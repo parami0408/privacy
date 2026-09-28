@@ -485,14 +485,16 @@
 
     function fulfillWish() {
         let text = messageInput.value.trim();
-        if (!text && !currentAttachment) {
-            let payload = { action: "fulfillWish", message: "" };
-            if (window.DataGuardBridge && typeof window.DataGuardBridge.performAction === 'function') {
-                window.DataGuardBridge.performAction("fulfillWish", JSON.stringify(payload));
-            }
-            setTimeout(refreshHistory, 100);
-            return;
-        }
+        if (!text && !currentAttachment) return;
+        // 260928，下面为历史遗留问题
+        // {
+        //     let payload = { action: "fulfillWish", message: "" };
+        //     if (window.DataGuardBridge && typeof window.DataGuardBridge.performAction === 'function') {
+        //         window.DataGuardBridge.performAction("fulfillWish", JSON.stringify(payload));
+        //     }
+        //     setTimeout(refreshHistory, 100);
+        //     return;
+        // }
         if (!text) text = "✨ 诚真 ✨";
 
         let payload = { action: "fulfillWish", message: text };
