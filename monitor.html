@@ -481,7 +481,6 @@ echo -e "wh_count=$wh_count\ntotal_len=$total_len\nsend_len=$send_len\fulfill_le
 echo "统计结果: $wh_count $total_len $send_len $fulfill_len $has_fulfill"
 
 # 260908，增加一个快速应答机制——避免用户问题但却卡在无法处理且为老问题(实际可以提前管理插入新问题)，在adbprotect存在等前提但wh_count=0时取最后的WISHTOHOPE_JUSTNOW_HISTORY进行处理
-# 260927，得先确认是答非所问啊，这个前提别忘了啊，否则正确的答案已经给出，这个还在矫情地补充，所以所有的回答必须是auto部分的即系统i级别的才可以，相反如果精确命中的这个不算啊，或者其他特别地方...
 if [ "$wh_count" -eq 0 ] && [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ -n "$adbprotect_ilogic_cn" ] && [ ! "$protectrandomalive" = "-1" ]; then
     qask=$(awk -v now="$(date +%s)000" -v checkpointfile="$FILEPATH/recent.checkpoint" '
     { lines[++n] = $0 }
@@ -500,8 +499,9 @@ if [ "$wh_count" -eq 0 ] && [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ -n "$adbpro
         # print "DEBUG diff_first=" (now - ts_first) " diff_last=" (now - ts_last) > "/dev/stderr"
         if ( han > 36 && (now - ts_first) <= 120000 && (now - ts_last) <= 60000) print action ":" text
     }' "$WISHTOHOPE_JUSTNOW_HISTORY")
-    
-    if [ -n "$qask" ]; then
+    # 260927，得先确认是答非所问啊这个前提别忘了啊？否则正确的答案已经给出，这个还在矫情地补充？所以所有的回答必须是auto部分的即系统级别的才可以？相反如果精确命中的这个不算啊或者其他特别地方？
+    # 260928，各种条件设置都麻烦，不如为如果当前问答后还问一遍即行重复就触发这个机制...
+    if [ -n "$qask" ] && [ $(grep -F "$qask" "$WISHTOHOPE_TODAY_HISTORY" 2>/dev/null | wc -l) -ge 2 ]; then
         # 直接输出，最快回答
         echo "XLOG:qask=$qask"
         if [[ "$qask" == sendWish:* ]]; then
