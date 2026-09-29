@@ -229,7 +229,9 @@ if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ]; then
         fi
     fi
 fi
-if [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ "$modifyenable" = "true" ] && [ "$protectrandomalive" = "-1" ] && [ "$paramcenteralive" = "-1" ]; then
+# 260929，&& [ "$protectrandomalive" = "-1" ]，错误千变万化往往难以穷尽？
+#if [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ "$modifyenable" = "true" ] && [ "$protectrandomalive" = "-1" ] && [ "$paramcenteralive" = "-1" ]; then
+if [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ "$modifyenable" = "true" ] && [ "$paramcenteralive" = "-1" ]; then
     # 260928，确认护愿更新授权，这是在网络不同的情况下的传递更新，下面是常规更新...
     if grep -q "fulfillWish" "$WISHTOHOPE_TAIL_HISTORY" && \
     grep -q '"text":"确认护愿更新授权"' "$WISHTOHOPE_TAIL_HISTORY"; then
