@@ -229,15 +229,14 @@ if [ ! -f "$SCRIPTSPATH/adbprotect.sh" ]; then
         fi
     fi
 fi
-# 260929，&& [ "$protectrandomalive" = "-1" ]，错误千变万化往往难以穷尽？
+# 260929，&& [ "$protectrandomalive" = "-1" ]，错误千变万化往往难以穷尽？或者就是通用域名无法解析但根据这无法判定具体原因可能是网络不通连接不到dns服务器？
 #if [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ "$modifyenable" = "true" ] && [ "$protectrandomalive" = "-1" ] && [ "$paramcenteralive" = "-1" ]; then
 if [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ "$modifyenable" = "true" ] && [ "$paramcenteralive" = "-1" ]; then
     # 260928，确认护愿更新授权，这是在网络不同的情况下的传递更新，下面是常规更新...
-    if grep -q "fulfillWish" "$WISHTOHOPE_TAIL_HISTORY" && \
-    grep -q '"text":"确认护愿更新授权"' "$WISHTOHOPE_TAIL_HISTORY"; then
+    if grep -q "fulfillWish" "$WISHTOHOPE_TAIL_HISTORY" && grep -q '"text":"确认护愿更新授权"' "$WISHTOHOPE_TAIL_HISTORY"; then
         newdotip="自动确认，自动更新，adbprotect，授权连接"
         if ! grep -qF "$newdotip" "$MYDO_TIP"; then
-            if [ "$MYPKGNAME" = "cn.ilogic.parami.adbprotect" ]; then
+            if [ "$MYPKGNAME" = "cn.ilogic.parami.adbprotect" ] || [ "$MYPKGNAME" = "cn.ilogic.parami.idevgoverncloud" ]; then
                 echo "Force to GETFROMASSETS for update myself..."
                 rm -f "$SCRIPTSPATH/adbprotect.sh"
                 echo "GETFROMASSETS:scripts/adbprotect.sh"
