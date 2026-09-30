@@ -503,11 +503,10 @@ if [ "$wh_count" -eq 0 ] && [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ -n "$adbpro
     # 260927，得先确认是答非所问啊这个前提别忘了啊？否则正确的答案已经给出，这个还在矫情地补充？所以所有的回答必须是auto部分的即系统级别的才可以？相反如果精确命中的这个不算啊或者其他特别地方？
     # 260928，各种条件设置都麻烦，不如为如果当前问答后还问一遍即行重复就触发这个机制...
     if [ -n "$qask" ]; then
-        # qaskbody=$(echo "$qask" | sed 's/^\(sendWish\|fulfillWish\)://')
+        # qaskbody=$(echo "$qask" | sed 's/^\(sendWish\|fulfillWish\)://') 确实很多不支持
         qask_body=$(echo "$qask" | sed 's/^[^:]*://')
         qasktimes=$(grep -F "$qaskbody" "$WISHTOHOPE_TODAY_HISTORY" 2>/dev/null | wc -l)
-        echo "XLOG:qasktimes=$qasktimes，qaskbody=$qaskbody"
-
+        # echo "XLOG:qasktimes=$qasktimes，qaskbody=$qaskbody"
         if [ $qasktimes -ge 2 ]; then
             # 直接输出，最快回答
             echo "XLOG:qask=$qask"
