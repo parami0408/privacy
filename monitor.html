@@ -497,7 +497,7 @@ if [ "$wh_count" -eq 0 ] && [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ -n "$adbpro
         han = 0
         for (i=1; i<=length(text); i++) if (substr(text,i,1) ~ /[一-龥]/) han++
         # print "DEBUG text=" text " han=" han " ts_first=" ts_first " ts_last=" ts_last " now=" now > "/dev/stderr"
-        print "DEBUG diff_first=" (now - ts_first) " diff_last=" (now - ts_last) > "/dev/stderr"
+        # print "DEBUG diff_first=" (now - ts_first) " diff_last=" (now - ts_last) > "/dev/stderr"
         if ( han > 36 && (now - ts_first) <= 120000 && (now - ts_last) <= 60000) print action ":" text
     }' "$WISHTOHOPE_JUSTNOW_HISTORY")
     # 260927，得先确认是答非所问啊这个前提别忘了啊？否则正确的答案已经给出，这个还在矫情地补充？所以所有的回答必须是auto部分的即系统级别的才可以？相反如果精确命中的这个不算啊或者其他特别地方？
