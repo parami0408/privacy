@@ -501,13 +501,16 @@ if [ "$wh_count" -eq 0 ] && [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ -n "$adbpro
         if ( han > 36 && (now - ts_first) <= 120000 && (now - ts_last) <= 60000) print action ":" text
     }' "$WISHTOHOPE_JUSTNOW_HISTORY")
     # 260927，得先确认是答非所问啊这个前提别忘了啊？否则正确的答案已经给出，这个还在矫情地补充？所以所有的回答必须是auto部分的即系统级别的才可以？相反如果精确命中的这个不算啊或者其他特别地方？
-    # 260928，各种条件设置都麻烦，不如为如果当前问答后还问一遍即行重复就触发这个机制...
+    # 260928，各种条件设置都麻烦，不如为如果当前问答后还问一遍即行重复就触发这个机制?但还是解决不了精确回答后又发起了快答问题
+    # 261002，查问题次数不如查checkpoint重复出现，这是最恰当不过的地方，通过时间和即时答案的复现，精准控制这个点...
     if [ -n "$qask" ]; then
         # qaskbody=$(echo "$qask" | sed 's/^\(sendWish\|fulfillWish\)://') 确实很多不支持
-        qask_body=$(echo "$qask" | sed 's/^[^:]*://')
-        qasktimes=$(grep -F "$qaskbody" "$WISHTOHOPE_TODAY_HISTORY" 2>/dev/null | wc -l)
-        # echo "XLOG:qasktimes=$qasktimes，qaskbody=$qaskbody"
-        if [ $qasktimes -ge 2 ]; then
+        # qask_body=$(echo "$qask" | sed 's/^[^:]*://')
+        # qasktimes=$(grep -F "$qaskbody" "$WISHTOHOPE_TODAY_HISTORY" 2>/dev/null | wc -l)
+        checkpoint=$(cat "$FILEPATH/recent.checkpoint" 2>/dev/null)
+        checktimes=$(grep -F "$checkpoint" "$WISHTOHOPE_TODAY_HISTORY" 2>/dev/null | wc -l)
+        echo "XLOG:checktimes=$checktimes，checkpoint=$checkpoint"
+        if [ $checktimes -ge 2 ]; then
             # 直接输出，最快回答
             echo "XLOG:qask=$qask"
             if [[ "$qask" == sendWish:* ]]; then
@@ -627,5 +630,5 @@ fi
 # 如果已经服务器ok了只是没反应adbprotect处可以基于todaytip沟通！
 fi
 
-echo "[$CURRENT_TIME][$(date '+%s')]: moniter010 end"
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter010.01 end"
 exit 0
