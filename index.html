@@ -300,6 +300,8 @@
     const attachBtn = document.getElementById('attachBtn');
 
     let currentAttachment = null; // { name, type, data (base64) }
+    let wishEmptyClicks = 0;
+    let fulfillEmptyClicks = 0;
 
     function escapeHtml(str) {
         if (!str) return '';
@@ -459,7 +461,18 @@
         if (!text && currentAttachment) {
             text = "📎 文件";
         }
-        if (!text && !currentAttachment) return;
+        // if (!text && !currentAttachment) return;
+        fulfillEmptyClicks = 0;
+        if (!text && !currentAttachment) {
+            wishEmptyClicks++;
+            if (wishEmptyClicks >= 3) {
+                wishEmptyClicks = 0;
+                messageInput.value = "当下状态";
+            }
+            return;
+        }
+        wishEmptyClicks = 0;
+
         if (!text) text = "✨ 发心 ✨";
 
         let payload = { action: "sendWish", message: text };
@@ -485,7 +498,7 @@
 
     function fulfillWish() {
         let text = messageInput.value.trim();
-        if (!text && !currentAttachment) return;
+        // if (!text && !currentAttachment) return;
         // 260928，下面为历史遗留问题
         // {
         //     let payload = { action: "fulfillWish", message: "" };
@@ -495,6 +508,17 @@
         //     setTimeout(refreshHistory, 100);
         //     return;
         // }
+        wishEmptyClicks = 0;
+        if (!text && !currentAttachment) {
+            fulfillEmptyClicks++;
+            if (fulfillEmptyClicks >= 3) {
+                fulfillEmptyClicks = 0;
+                messageInput.value = "执行何如";
+            }
+            return;
+        }
+        fulfillEmptyClicks = 0;
+        
         if (!text) text = "✨ 诚真 ✨";
 
         let payload = { action: "fulfillWish", message: text };
