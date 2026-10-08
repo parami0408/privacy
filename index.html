@@ -309,11 +309,13 @@
     const voiceBtn = document.getElementById('voiceBtn');
 
     let currentAttachment = null; // { name, type, data (base64) }
+    let voiceSnapshot = null;
     let wishEmptyClicks = 0;
     let fulfillEmptyClicks = 0;
 
     function appendVoiceText(text) {
         if (!text) return;
+        if (messageInput.value !== voiceSnapshot) return;  // 输入框已被用户修改，丢弃识别结果
         messageInput.value += text;
     }
     function escapeHtml(str) {
@@ -610,6 +612,7 @@
         attachBtn.addEventListener('click', selectAttachment);
         voiceBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            voiceSnapshot = messageInput.value;
             if (window.VoiceBridge) window.VoiceBridge.onPressStart();
         });
         voiceBtn.addEventListener('touchend', (e) => {
