@@ -176,6 +176,11 @@
         .attach-btn:active {
             background: rgba(0,0,0,0.05);
         }
+        .left-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
         .message-input {
             flex: 1;
             border: none;
@@ -276,7 +281,10 @@
     </div>
 
     <div class="input-bar">
-        <button class="attach-btn" id="attachBtn">📎</button>
+        <div class="left-buttons">
+            <button class="attach-btn" id="attachBtn">📎</button>
+            <button class="attach-btn" id="voiceBtn">🎤</button>
+        </div>
         <textarea class="message-input" id="messageInput" placeholder="写下你的心愿..." rows="2"></textarea>
         <div class="buttons-vertical">
             <button class="send-btn" id="sendBtn">发心</button>
@@ -298,11 +306,16 @@
     const sendBtn = document.getElementById('sendBtn');
     const fulfillBtn = document.getElementById('fulfillBtn');
     const attachBtn = document.getElementById('attachBtn');
+    const voiceBtn = document.getElementById('voiceBtn');
 
     let currentAttachment = null; // { name, type, data (base64) }
     let wishEmptyClicks = 0;
     let fulfillEmptyClicks = 0;
 
+    function appendVoiceText(text) {
+        if (!text) return;
+        messageInput.value += text;
+    }
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, m => {
@@ -595,6 +608,14 @@
         sendBtn.addEventListener('click', sendWish);
         fulfillBtn.addEventListener('click', fulfillWish);
         attachBtn.addEventListener('click', selectAttachment);
+        voiceBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (window.VoiceBridge) window.VoiceBridge.onPressStart();
+        });
+        voiceBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (window.VoiceBridge) window.VoiceBridge.onPressEnd();
+        });
 
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
