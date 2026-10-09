@@ -157,6 +157,7 @@
             align-items: center;
             gap: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
         }
         .attach-btn {
             background: none;
@@ -180,6 +181,38 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            position: relative;
+            z-index: 10;
+        }
+        .voice-toast {
+            display: none;
+            text-align: center;
+            font-size: 13px;
+            color: #c2410c;
+            margin: 0 16px 4px 16px;
+            font-weight: 600;
+        }
+        .recording-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 6px;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #c2410c;
+            font-weight: 600;
+            z-index: 5;
+        }
+        .recording-overlay.show {
+            display: flex;
+        }
+        .attach-btn.recording {
+            color: #ef4444;
         }
         .message-input {
             flex: 1;
@@ -280,6 +313,7 @@
         <div class="message-list" id="messageList"></div>
     </div>
 
+    <div class="voice-toast" id="voiceToast">正在识别中…</div>
     <div class="input-bar">
         <div class="left-buttons">
             <button class="attach-btn" id="attachBtn">📎</button>
@@ -290,6 +324,7 @@
             <button class="send-btn" id="sendBtn">发心</button>
             <button class="fulfill-btn" id="fulfillBtn">诚真</button>
         </div>
+        <div class="recording-overlay" id="recordingOverlay">正在录音中…</div>
     </div>
 </div>
 
@@ -307,6 +342,10 @@
     const fulfillBtn = document.getElementById('fulfillBtn');
     const attachBtn = document.getElementById('attachBtn');
     const voiceBtn = document.getElementById('voiceBtn');
+
+    const recordingOverlay = document.getElementById('recordingOverlay');
+    const voiceToast = document.getElementById('voiceToast');
+    let voiceToastTimer = null;
 
     let currentAttachment = null; // { name, type, data (base64) }
     let voiceSnapshot = null;
@@ -613,10 +652,20 @@
         voiceBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             voiceSnapshot = messageInput.value;
+            voiceBtn.classList.add('recording');
+            recordingOverlay.classList.add('show');
             if (window.VoiceBridge) window.VoiceBridge.onPressStart();
         });
         voiceBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
+            voiceBtn.classList.remove('recording');
+            recordingOverlay.classList.remove('show');
+            // 显示"正在识别中…"5 秒
+            voiceToast.style.display = 'block';
+            if (voiceToastTimer) clearTimeout(voiceToastTimer);
+            voiceToastTimer = setTimeout(() => {
+                voiceToast.style.display = 'none';
+            }, 5000);
             if (window.VoiceBridge) window.VoiceBridge.onPressEnd();
         });
 
