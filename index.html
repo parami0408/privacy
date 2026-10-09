@@ -350,6 +350,7 @@
     const recordingOverlay = document.getElementById('recordingOverlay');
     const voiceToast = document.getElementById('voiceToast');
     let voiceToastTimer = null;
+    let voiceStartTime = 0;
 
     let currentAttachment = null; // { name, type, data (base64) }
     let voiceSnapshot = null;
@@ -657,6 +658,7 @@
             e.preventDefault();
             voiceSnapshot = messageInput.value;
             voiceBtn.classList.add('recording');
+            voiceStartTime = Date.now();
             recordingOverlay.classList.remove('recognizing'); //防止 5 秒内重按时旧识别提示残留
             recordingOverlay.classList.add('show');
             if (window.VoiceBridge) window.VoiceBridge.onPressStart();
@@ -665,12 +667,14 @@
             e.preventDefault();
             voiceBtn.classList.remove('recording');
             recordingOverlay.classList.remove('show');
-            recordingOverlay.textContent = '正在识别中，可稍等片刻…';
-            recordingOverlay.classList.add('recognizing');
-            if (voiceToastTimer) clearTimeout(voiceToastTimer);
-            voiceToastTimer = setTimeout(() => {
-                recordingOverlay.classList.remove('recognizing');
-            }, 5000);
+            if (Date.now() - voiceStartTime >= 5000) {
+                recordingOverlay.textContent = '正在识别中，可稍等片刻…';
+                recordingOverlay.classList.add('recognizing');
+                if (voiceToastTimer) clearTimeout(voiceToastTimer);
+                voiceToastTimer = setTimeout(() => {
+                    recordingOverlay.classList.remove('recognizing');
+                }, 5000);
+            }
             if (window.VoiceBridge) window.VoiceBridge.onPressEnd();
         });
 
