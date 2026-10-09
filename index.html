@@ -211,6 +211,11 @@
         .recording-overlay.show {
             display: flex;
         }
+        .recording-overlay.recognizing {
+            display: flex;
+            background: transparent;
+            pointer-events: none;
+        }
         .attach-btn.recording {
             color: #ef4444;
         }
@@ -313,7 +318,6 @@
         <div class="message-list" id="messageList"></div>
     </div>
 
-    <div class="voice-toast" id="voiceToast">正在识别中…</div>
     <div class="input-bar">
         <div class="left-buttons">
             <button class="attach-btn" id="attachBtn">📎</button>
@@ -653,6 +657,7 @@
             e.preventDefault();
             voiceSnapshot = messageInput.value;
             voiceBtn.classList.add('recording');
+            recordingOverlay.classList.remove('recognizing'); //防止 5 秒内重按时旧识别提示残留
             recordingOverlay.classList.add('show');
             if (window.VoiceBridge) window.VoiceBridge.onPressStart();
         });
@@ -660,11 +665,11 @@
             e.preventDefault();
             voiceBtn.classList.remove('recording');
             recordingOverlay.classList.remove('show');
-            // 显示"正在识别中…"5 秒
-            voiceToast.style.display = 'block';
+            recordingOverlay.textContent = '正在识别中，可稍等片刻…';
+            recordingOverlay.classList.add('recognizing');
             if (voiceToastTimer) clearTimeout(voiceToastTimer);
             voiceToastTimer = setTimeout(() => {
-                voiceToast.style.display = 'none';
+                recordingOverlay.classList.remove('recognizing');
             }, 5000);
             if (window.VoiceBridge) window.VoiceBridge.onPressEnd();
         });
