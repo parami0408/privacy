@@ -233,7 +233,8 @@ fi
 #if [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ "$modifyenable" = "true" ] && [ "$protectrandomalive" = "-1" ] && [ "$paramcenteralive" = "-1" ]; then
 if [ -f "$SCRIPTSPATH/adbprotect.sh" ] && [ "$modifyenable" = "true" ] && [ "$paramcenteralive" = "-1" ]; then
     # 260928，确认护愿更新授权，这是在网络不同的情况下的传递更新，下面是常规更新...
-    if grep -q "fulfillWish" "$WISHTOHOPE_TAIL_HISTORY" && grep -q '"text":"确认护愿更新授权"' "$WISHTOHOPE_TAIL_HISTORY"; then
+    # 261011，WISHTOHOPE_TAIL_HISTORY必须扩展一下否则执行不了这个重要动作
+    if grep -q "fulfillWish" "$WISHTOHOPE_JUSTNOW_HISTORY" && grep -q '"text":"确认护愿更新授权"' "$WISHTOHOPE_JUSTNOW_HISTORY"; then
         newdotip="自动确认，自动更新，adbprotect，授权连接"
         if ! grep -qF "$newdotip" "$MYDO_TIP"; then
             if [ "$MYPKGNAME" = "cn.ilogic.parami.adbprotect" ] || [ "$MYPKGNAME" = "cn.ilogic.parami.idevgoverncloud" ]; then
@@ -630,5 +631,5 @@ fi
 # 如果已经服务器ok了只是没反应adbprotect处可以基于todaytip沟通！
 fi
 
-echo "[$CURRENT_TIME][$(date '+%s')]: moniter010.01 end"
+echo "[$CURRENT_TIME][$(date '+%s')]: moniter010 end"
 exit 0
