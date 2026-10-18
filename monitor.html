@@ -10,6 +10,8 @@ SYSTEM_PREFFILE="$PREFSPATH/app_prefs.xml"
 GUARD_PREFFILE="$PREFSPATH/backguard_records.xml"
 EVENTS_PREFFILE="$PREFSPATH/system_events.xml"
 
+ADMINSTATS_PREFFILE="$PREFSPATH/admin_usestats.xml"
+
 LOGSPATH="$FILEPATH/logs"
 POLICY_FILE="$FILEPATH/policies.xml"
 
@@ -350,15 +352,18 @@ fi
 # 一些逐步递增的嵌入操作语义转换模型！
 wishtohope_tail_text=$(cat "$WISHTOHOPE_TAIL_HISTORY" | grep -E '"action":"fulfillWish"' | grep -E '"type":"user"' | sed -n 's/.*"text":"\([^"]*\)".*/\1/p')
 if [ -n "$wishtohope_tail_text" ]; then
+    # 261018，注意ENHANCEPOLICY的存储不能连续进行？注意可否先初始化一下基于admin的enhance？
     if echo "$wishtohope_tail_text" | grep -qE "不看|拒绝|阻止|禁止|屏蔽|过滤|限制|戒" && echo "$wishtohope_tail_text" | grep -qE "敏感|不雅|糟糕|不良|不宜|不适|成人|违规|反感|厌恶"; then
-        awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnText>false</closeOnText>")print "ENHANCEPOLICY:"pkg"=closeOnText";f=0}' "$POLICY_FILE"
+        awk -F'"' '/<long name="/{pkg=$2;val=$4+0;if(val>15&&index(pkg,"cn.ilogic.parami")!=1&&pkg!="com.example.helloworld"){print "ENHANCEPOLICY:"pkg"=timeLimit=120";print "sleep 1"}}' "$ADMINSTATS_PREFFILE"
+        awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnText>false</closeOnText>"){print "ENHANCEPOLICY:"pkg"=closeOnText";print "sleep 1"};f=0}' "$POLICY_FILE"
         echo -e "全面增强，敏感内容，自动过滤，防止涉入" > "$MYDO_TIP"
         echo "moniter010 exit for auto-closeontext-set"
         exit 1
     fi
 
     if echo "$wishtohope_tail_text" | grep -qE "戒|不看|拒|阻止|禁止|屏蔽|限制" && echo "$wishtohope_tail_text" | grep -qE "视频|播放|直播|抖音|短剧"; then
-        awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnPlay>false</closeOnPlay>")print "ENHANCEPOLICY:"pkg"=closeOnPlay";f=0}' "$POLICY_FILE"
+        awk -F'"' '/<long name="/{pkg=$2;val=$4+0;if(val>15&&index(pkg,"cn.ilogic.parami")!=1&&pkg!="com.example.helloworld"){print "ENHANCEPOLICY:"pkg"=timeLimit=120";print "sleep 1"}}' "$ADMINSTATS_PREFFILE"
+        awk '/<policy package=/{pkg=$0;sub(/.*package="/,"",pkg);sub(/".*/,"",pkg);f=1;b=""} f{b=b$0"\n"}/<\/policy>/&&f{if(b~"<targetActivity></targetActivity>"&&b~"<closeOnPlay>false</closeOnPlay>"){print "ENHANCEPOLICY:"pkg"=closeOnPlay";print "sleep 1"};f=0}' "$POLICY_FILE"
         echo -e "全面增强，视频播放，戒断禁止，聚焦正事" > "$MYDO_TIP"    
         echo "moniter010 exit for auto-closeonply-set"
         exit 1
