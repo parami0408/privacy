@@ -66,6 +66,7 @@
         .chat-area {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 0 16px 8px;
             scroll-behavior: smooth;
         }
@@ -92,7 +93,7 @@
             justify-content: space-between;
             gap: 12px;
             flex-wrap: wrap;
-            max-width: 80%;
+            max-width: 100%;
             min-width: 0;
         }
         .message-item.user .message-text {
@@ -117,6 +118,9 @@
             font-size: 15px;
             line-height: 1.4;
             color: #f0f0f0;
+            max-width: 100%;
+            min-width: 0;
+            word-break: break-word;
         }
         /* 历史消息样式（淡灰色背景，降低饱和度） */
         .message-item.system.historical .message-bubble {
@@ -147,7 +151,6 @@
             flex-basis: 100%;
             min-width: 0;
             width: 100%;
-            box-sizing: border-box;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
